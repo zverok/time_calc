@@ -7,11 +7,10 @@ RSpec.describe TimeCalc, 'math' do
   {
     plus: :+,
     minus: :-,
-    # floor: :floor,
+    floor: :floor,
     # ceil: :ceil,
     # round: :round
   }.each do |filename, sym|
-
     describe "##{sym}" do
       CSV.read("spec/fixtures/#{filename}.csv")
         .reject { |r| r.first.start_with?('# ') } # hand-made CSV comments!
