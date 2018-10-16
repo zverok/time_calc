@@ -8,7 +8,7 @@ RSpec.describe TimeCalc, 'math' do
     plus: :+,
     minus: :-,
     floor: :floor,
-    # ceil: :ceil,
+    ceil: :ceil,
     # round: :round
   }.each do |filename, sym|
     describe "##{sym}" do
