@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem 'backports', '>= 3.15.0'
+
 group :test do
   gem 'rspec'
   gem 'rspec-its'

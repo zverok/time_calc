@@ -1,0 +1,40 @@
+AllCops:
+  Include:
+    - 'lib/**/*.rb'
+    - 'spec/**/*.rb'
+  DisplayCopNames: true
+  TargetRubyVersion: 2.4
+
+Metrics/LineLength:
+  Enabled: false
+  IgnoredPatterns: ['\#.*'] # ignore long comments
+
+Naming/UncommunicativeMethodParamName:
+  AllowedNames:
+    - to
+    - tm
+    - sz
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/AndOr:
+  EnforcedStyle: conditionals
+
+Style/LambdaCall:
+  Enabled: false
+
+Style/FormatStringToken:
+  Enabled: false
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/BlockDelimiters:
+  Enabled: false
+
+Style/SignalException:
+  EnforcedStyle: semantic
+
+Metrics/MethodLength:
+  Max: 15

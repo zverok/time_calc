@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'time_calc/units'
 require_relative 'time_calc/util'
 
@@ -18,6 +20,10 @@ class TimeCalc
     @source = source
   end
 
+  def inspect
+    '<%s(%p)>' % [self.class, source]
+  end
+
   def op(name, span, unit)
     OPERATIONS.include?(name) or fail ArgumentError, "Unrecognized operation #{name.inspect}"
     Units.get(unit).public_send(name, source, span)
@@ -25,8 +31,20 @@ class TimeCalc
 
   OPERATIONS.each do |name|
     define_method(name) { |span, unit = nil|
-      span, unit = 1, span if unit.nil? # allow round(:year) and round(3, :years) call-sequences
+      # allow +(:year) and +(3, :years) call-sequences
+      # ...and round(:tuesday) instead of round(1/7r, :week)
+      span, unit = guess_span(span) if unit.nil?
       op(name, span, unit)
     }
+  end
+
+  private
+
+  def guess_span(unit)
+    if (wday = WEEKDAYS.index(unit))
+      [Rational(wday, 7), :weeks]
+    else
+      [1, unit]
+    end
   end
 end

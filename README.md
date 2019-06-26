@@ -13,22 +13,20 @@ TC = TimeCalc
 
 t = Time.parse('2018-03-14 08:06:15')
 
-TC.(t).+(1, :hour).round(:min).to_time
+TC.(t).+(3, :hours)
 # TimeCalc.call(Time.now) shortcut:
-TC.now.ceil(:day).to_time # beginning of the today
+TC.now.floor(:day) # beginning of the today
 
-# proc constructor synopsys:
-times.map(&TC.+(1, :hour).round(:min))
+TC.now.round(2/7r, :weeks)
 
-# First tuesday of current month:
-TC.now.floor(:month).ceil(2/7r, :week).to_time
-# It is algorithmically pretty, yet not for everybody's eyes, so this is the synonym:
-TC.now.floor(:month).ceil(:tuesday).to_time
+TC.(t).-(other) # TimeDiff# to_i(:year), to_f(:year), % :year
+
 ```
 
 Operations supported:
 * `+`, `-`
 * `ceil`, `round`, `floor`
+* `clamp`
 
 Each operation has two forms: `op(num, unit)` and `op(unit)` (= synonym for `op(1, unit)`). This means
 you can also do `round(3, :hours)` to round to nearest 3-hour mark (0h, 3h, 9h, 12h, 15h...), and
@@ -48,13 +46,27 @@ Units supported:
 ```ruby
 t = Time.parse('2018-03-14 08:06:15')
 
-TC::Op.(t).+(1, :hour).round(:min).to_time
+TC.with(t).+(1, :hour).round(:min).to_time
 
 # proc constructor synopsys:
-times.map(&TC::Op.+(1, :hour).round(:min))
+times.map(&TC.+(1, :hour).round(:min))
 
 # First tuesday of current month:
-TC::Op.now.floor(:month).ceil(2/7r, :week).to_time
+TC.with_now.floor(:month).ceil(2/7r, :week).to_time
 # It is algorithmically pretty, yet not for everybody's eyes, so this is the synonym:
-TC::Op.now.floor(:month).ceil(:tuesday).to_time
+TC.with_now.floor(:month).ceil(:tuesday).to_time
+```
+
+### Math sequences
+
+```ruby
+TC.(t).step(2, :weeks)
+TC.(from).upto(to).step(3, :weeks)
+TC.(from).for(3, :years).step(2, :weeks)
+```
+
+### Utility methods
+
+```ruby
+TC.(t).merge(year: 2001)
 ```
