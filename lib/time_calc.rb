@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'time_calc/units'
-require_relative 'time_calc/util'
+require_relative 'time_calc/value'
 
 class TimeCalc
   class << self
@@ -10,41 +9,38 @@ class TimeCalc
     def now
       new(Time.now)
     end
+
+    def from(time)
+      Value.new(time)
+    end
+
+    def from_now
+      from(Time.now)
+    end
   end
 
-  OPERATIONS = %i[+ - floor ceil round].freeze
-
-  attr_reader :source, :operations
-
-  def initialize(source)
-    @source = source
+  def initialize(time)
+    @value = Value.new(time)
   end
 
   def inspect
-    '<%s(%p)>' % [self.class, source]
+    '<%s(%p)>' % [self.class, @value.to_time]
   end
 
-  def op(name, span, unit)
-    OPERATIONS.include?(name) or fail ArgumentError, "Unrecognized operation #{name.inspect}"
-    Units.get(unit).public_send(name, source, span)
-  end
+  OPERATIONS = %i[merge truncate floor ceil round + -].freeze
 
   OPERATIONS.each do |name|
-    define_method(name) { |span, unit = nil|
-      # allow +(:year) and +(3, :years) call-sequences
-      # ...and round(:tuesday) instead of round(1/7r, :week)
-      span, unit = guess_span(span) if unit.nil?
-      op(name, span, unit)
-    }
+    define_method(name) { |*args| @value.public_send(name, *args).to_time }
   end
 
-  private
-
-  def guess_span(unit)
-    if (wday = WEEKDAYS.index(unit))
-      [Rational(wday, 7), :weeks]
-    else
-      [1, unit]
+  class << self
+    OPERATIONS.each do |name|
+      define_method(name) { |*args| Op.new([[name, *args]]) }
     end
   end
+
+  # the rest: just delegate
+
 end
+
+require_relative 'time_calc/op'

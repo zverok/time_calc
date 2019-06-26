@@ -18,7 +18,6 @@ class TimeCalc
     }.freeze
     UNITS = %i[year month day hour min sec subsec].freeze
     ALL_UNITS = %i[year month week day hour min sec].freeze
-    CONSTRUCT_UNITS = %i[year month day hour min sec].freeze
     MULTIPLIERS = {
       sec: 1,
       min: 60,
@@ -40,9 +39,10 @@ class TimeCalc
 
     def self.from_h(hash, utc_offset: Time.now.utc_offset)
       hash
+        .slice(*UNITS)
         .merge(EMPTY_HASH) { |_k, val, empty| val || empty }
         .tap { |h| h[:sec] += h.delete(:subsec) }
-        .values_at(*CONSTRUCT_UNITS)
+        .values
         .then { |components| Value.new(Time.new(*components, utc_offset)) }
     end
 
