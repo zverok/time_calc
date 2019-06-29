@@ -7,10 +7,6 @@ RSpec.describe TimeCalc::Value do
   its(:to_time) { is_expected.to eq time }
   its(:inspect) { is_expected.to eq '#<TimeCalc::Value(2019-06-28 14:28:48 +0300)>' }
 
-  def vt(str)
-    TimeCalc::Value.new(t(str))
-  end
-
   describe '#[]' do
     subject { value.method(:[]) }
 
@@ -78,5 +74,25 @@ RSpec.describe TimeCalc::Value do
 
     its_call(:month) { is_expected.to ret vt('2019-07-01 00:00:00 +03') }
     its_call(:hour) { is_expected.to ret vt('2019-06-28 14:00:00 +03') }
+  end
+
+  describe '#to' do
+    subject { value.to(t('2019-07-01')) }
+
+    it {
+      is_expected
+        .to be_a(TimeCalc::Sequence)
+        .and have_attributes(from: value, to: vt('2019-07-01'), step: nil)
+    }
+  end
+
+  describe '#step' do
+    subject { value.step(3, :days) }
+
+    it {
+      is_expected
+        .to be_a(TimeCalc::Sequence)
+        .and have_attributes(from: value, step: [3, :days])
+    }
   end
 end

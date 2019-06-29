@@ -40,7 +40,7 @@ class TimeCalc
   end
 
   # the rest: just delegate
-
 end
 
 require_relative 'time_calc/op'
+require_relative 'time_calc/sequence'

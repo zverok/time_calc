@@ -1,11 +1,15 @@
+# frozen_string_literal: true
+
 class TimeCalc
   class Op
+    attr_reader :chain
+
     def initialize(chain = [])
       @chain = chain
     end
 
     def inspect
-      '<%s %s>' % [self.class, @chain.map { |name, *args| "#{name}(#{args.join(' ')})"}.join('.')]
+      '<%s %s>' % [self.class, @chain.map { |name, *args| "#{name}(#{args.join(' ')})" }.join('.')]
     end
 
     TimeCalc::OPERATIONS.each do |name|

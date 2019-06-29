@@ -122,6 +122,16 @@ class TimeCalc
       self.+(-span, unit)
     end
 
+    def to(tm)
+      Sequence.new(from: self).to(tm)
+    end
+
+    def step(span, unit = nil)
+      span, unit = 1, span if unit.nil?
+      Sequence.new(from: self).step(span, unit)
+    end
+
+
     private
 
     def floor_week
