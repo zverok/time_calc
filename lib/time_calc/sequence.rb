@@ -5,8 +5,8 @@ class TimeCalc
     attr_reader :from
 
     def initialize(from:, to: nil, step: nil)
-      @from = wrap(from)
-      @to = to&.then(&method(:wrap))
+      @from = Value.(from)
+      @to = to&.then(&Value.method(:call))
       @step = step
     end
 
@@ -52,17 +52,6 @@ class TimeCalc
     end
 
     private
-
-    def wrap(value)
-      case value
-      when Time
-        Value.new(value)
-      when Value
-        value
-      else
-        fail ArgumentError, "Unsupported value: #{value}"
-      end
-    end
 
     def direction
       (@step.first / @step.first.abs)

@@ -54,6 +54,11 @@ RSpec.describe TimeCalc::Value do
     its_call(1, :year) { is_expected.to ret t('2018-06-28 14:28:48.123 +03') }
     its_call(1, :month) { is_expected.to ret t('2019-05-28 14:28:48.123 +03') }
     its_call(1, :hour) { is_expected.to ret t('2019-06-28 13:28:48.123 +03') }
+
+    context 'with other time' do
+      subject { value - t('2018-06-28 14:28:48.123 +03') }
+      it { is_expected.to be_kind_of(TimeCalc::Diff) }
+    end
   end
 
   describe '#floor' do

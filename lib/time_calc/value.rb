@@ -37,6 +37,17 @@ class TimeCalc
       years: :year
     }.freeze
 
+    def self.call(value)
+      case value
+      when Time
+        new(value)
+      when Value
+        value
+      else
+        fail ArgumentError, "Unsupported value: #{value}"
+      end
+    end
+
     def self.from_h(hash, utc_offset: Time.now.utc_offset)
       hash
         .slice(*UNITS)
@@ -58,9 +69,15 @@ class TimeCalc
       '#<%s(%p)>' % [self.class, to_time]
     end
 
-    def ==(other)
-      other.is_a?(self.class) && other.to_time == to_time
+    def <=>(other)
+      return unless other.is_a?(self.class)
+
+      to_time <=> other.to_time
     end
+
+    include Comparable
+
+    UNITS.each { |u| define_method(u) { self[u] } }
 
     def [](unit)
       UNITS.include?(unit) or fail KeyError, "Undefined unit: #{unit}"
@@ -118,8 +135,8 @@ class TimeCalc
       end
     end
 
-    def -(span, unit)
-      self.+(-span, unit)
+    def -(span_or_other, unit = nil)
+      unit.nil? ? Diff.new(self, span_or_other) : self.+(-span_or_other, unit)
     end
 
     def to(tm)
@@ -130,7 +147,6 @@ class TimeCalc
       span, unit = 1, span if unit.nil?
       Sequence.new(from: self).step(span, unit)
     end
-
 
     private
 
