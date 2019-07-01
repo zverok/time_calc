@@ -6,6 +6,7 @@ group :test do
   gem 'rspec'
   gem 'rspec-its'
   gem 'saharspec'
+  gem 'simplecov'
 end
 
 group :development do

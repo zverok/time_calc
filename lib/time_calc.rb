@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'time_calc/units'
 require_relative 'time_calc/value'
 
 class TimeCalc

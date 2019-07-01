@@ -8,35 +8,6 @@ require 'backports/2.5.0/hash/slice'
 
 class TimeCalc
   class Value
-    EMPTY_HASH = {
-      month: 1,
-      day: 1,
-      hour: 0,
-      min: 0,
-      sec: 0,
-      subsec: 0
-    }.freeze
-    UNITS = %i[year month day hour min sec subsec].freeze
-    ALL_UNITS = %i[year month week day hour min sec].freeze
-    MULTIPLIERS = {
-      sec: 1,
-      min: 60,
-      hour: 60 * 60,
-      day: 24 * 60 * 60
-    }.freeze
-
-    SYNONYMS = {
-      second: :sec,
-      seconds: :sec,
-      minute: :min,
-      minutes: :min,
-      hours: :hour,
-      days: :day,
-      weeks: :week,
-      months: :month,
-      years: :year
-    }.freeze
-
     def self.call(value)
       case value
       when Time
@@ -50,8 +21,8 @@ class TimeCalc
 
     def self.from_h(hash, utc_offset: Time.now.utc_offset)
       hash
-        .slice(*UNITS)
-        .merge(EMPTY_HASH) { |_k, val, empty| val || empty }
+        .slice(*Units::STRUCTURAL)
+        .merge(Units::DEFAULTS) { |_k, val, empty| val || empty }
         .tap { |h| h[:sec] += h.delete(:subsec) }
         .values
         .then { |components| Value.new(Time.new(*components, utc_offset)) }
@@ -77,10 +48,10 @@ class TimeCalc
 
     include Comparable
 
-    UNITS.each { |u| define_method(u) { self[u] } }
+    Units::ALL.each { |u| define_method(u) { self[u] } }
 
     def [](unit)
-      UNITS.include?(unit) or fail KeyError, "Undefined unit: #{unit}"
+      Units::STRUCTURAL.include?(unit) or fail KeyError, "Undefined unit: #{unit}"
       @time.public_send(unit)
     end
 
@@ -89,7 +60,7 @@ class TimeCalc
     end
 
     def to_h
-      UNITS.to_h { |u| [u, self[u]] }
+      Units::STRUCTURAL.to_h { |u| [u, self[u]] }
     end
 
     def merge(**attrs)
@@ -97,13 +68,13 @@ class TimeCalc
     end
 
     def truncate(unit)
-      real_unit = guess_unit(unit)
-      return floor_week if real_unit == :week
+      unit = Units.(unit)
+      return floor_week if unit == :week
 
-      UNITS
-        .drop_while { |u| u != real_unit }
+      Units::STRUCTURAL
+        .drop_while { |u| u != unit }
         .drop(1)
-        .then { |keys| EMPTY_HASH.slice(*keys) }
+        .then { |keys| Units::DEFAULTS.slice(*keys) }
         .then(&method(:merge))
     end
 
@@ -120,18 +91,16 @@ class TimeCalc
     end
 
     def +(span, unit = nil)
-      real_unit = guess_unit(unit)
-      case real_unit
+      unit = Units.(unit)
+      case unit
       when :sec, :min, :hour, :day
-        Value.new(to_time + span * MULTIPLIERS.fetch(real_unit))
+        Value.new(to_time + span * Units::MULTIPLIERS.fetch(unit))
       when :week
         self.+(span * 7, :day)
       when :month
         plus_months(span)
       when :year
         merge(year: to_time.year + span)
-      else
-        fail ArgumentError, "Unsupported unit: #{unit} (#{real_unit})"
       end
     end
 
@@ -160,12 +129,6 @@ class TimeCalc
       m = (target - 1) % 12 + 1
       dy = (target - 1) / 12
       merge(year: to_time.year + dy, month: m)
-    end
-
-    def guess_unit(name)
-      SYNONYMS
-        .fetch(name, name)
-        .tap { |u| ALL_UNITS.include?(u) or fail ArgumentError, "Unsupported unit: #{name}" }
     end
   end
 end

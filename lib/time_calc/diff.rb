@@ -20,6 +20,7 @@ class TimeCalc
 
     def div(span, unit = nil)
       span, unit = 1, span if unit.nil?
+      unit = Units.(unit)
       singular_div(unit).div(span)
     end
 
@@ -29,7 +30,7 @@ class TimeCalc
 
     def factorize
       t = to
-      Value::UNITS[0..-2].inject({}) do |res, unit|
+      Unit::ALL[0..-2].inject({}) do |res, unit|
         span, t = Diff.new(from, t).divmod(unit)
         res.merge(unit => span)
       end
@@ -40,9 +41,9 @@ class TimeCalc
     def singular_div(unit)
       case unit
       when :sec, :min, :hour, :day
-        from.to_time.-(to.to_time).div(Value::MULTIPLIERS.fetch(unit))
+        from.to_time.-(to.to_time).div(Units::MULTIPLIERS.fetch(unit))
       when :week
-        div(7, :days)
+        div(7, :day)
       when :month
         month_div
       when :year
@@ -52,7 +53,7 @@ class TimeCalc
       end
     end
 
-    def month_div
+    def month_div # rubocop:disable Metrics/AbcSize -- well... at least it is short
       ((from.year - to.year) * 12 + (from.month - to.month))
         .then { |res| from.day >= to.day ? res : res - 1 }
     end
