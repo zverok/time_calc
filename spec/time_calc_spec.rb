@@ -1,59 +1,45 @@
 # frozen_string_literal: true
 
-RSpec.xdescribe TimeCalc do
-  subject(:calc) { described_class.new(start) }
+RSpec.describe TimeCalc do
+  describe 'instance' do
+    subject(:calc) { described_class.new(start) }
 
-  let(:start) { t('2018-03-01 18:30:45') }
+    let(:start) { t('2018-03-01 18:30:45') }
 
-  it { is_expected.to have_attributes(source: start) }
+    its(:inspect) { is_expected.to eq '#<TimeCalc(2018-03-01 18:30:45 +0200)>' }
 
-  describe '.call' do
-    subject { described_class.call(start) }
+    it 'delegates operations that return time' do
+      expect(calc.+(2, :days)).to eq t('2018-03-03 18:30:45')
+      expect(calc.-(2, :days)).to eq t('2018-02-27 18:30:45')
+      expect(calc.floor(:day)).to eq t('2018-03-01')
+      expect(calc.ceil(:day)).to eq t('2018-03-02')
+      expect(calc.round(:day)).to eq t('2018-03-02')
+    end
 
-    it { is_expected.to have_attributes(source: start) }
-  end
+    it 'delegates operations that return sequences' do
+      expect(calc.to(t('2019-01-01'))).to eq TimeCalc::Sequence.new(from: start, to: t('2019-01-01'))
+      expect(calc.step(3, :days)).to eq TimeCalc::Sequence.new(from: start, step: [3, :days])
+      expect(calc.for(3, :days)).to eq TimeCalc::Sequence.new(from: start, to: t('2018-03-04 18:30:45'))
+    end
 
-  describe '#op' do
-    subject { calc.method(:op) }
-
-    its_call(:+, 1, :day) { is_expected.to ret t('2018-03-02 18:30:45') }
-    its_call(:*, 1, :day) { is_expected.to raise_error ArgumentError, /:*/ }
-  end
-
-  %i[+ - floor ceil round].each do |op|
-    describe "##{op}" do
-      subject { calc.method(op) }
-
-      its_call(2, :day) { is_expected.to ret calc.op(op, 2, :day) }
-      its_call(:day) { is_expected.to ret calc.op(op, 1, :day) }
+    it 'delegates operations that return diff' do
+      expect(calc - t('2019-01-01')).to be_a TimeCalc::Diff
     end
   end
 
-  describe 'unit synonyms' do
-    [
-      %i[sec second seconds],
-      %i[min minute minutes],
-      %i[hour hours],
-      %i[day days],
-      %i[week weeks],
-      %i[month months],
-      %i[year years]
-    ].each do |synonyms|
-      context "with #{synonyms.join('/')}" do
-        subject { synonyms.map { |unit| calc.+(1, unit) } }
-
-        its(:'uniq.size') { is_expected.to eq 1 }
-      end
+  describe 'class' do
+    it 'has shortcuts for self-creation and Value' do
+      allow(Time).to receive(:now).and_return(t('2018-03-01 18:30:45'))
+      allow(Date).to receive(:today).and_return(d('2018-03-01'))
+      expect(described_class.now).to eq described_class.new(Time.now)
+      expect(described_class.today).to eq described_class.new(Date.today)
+      expect(described_class.from_now).to eq TimeCalc::Value.new(Time.now)
+      expect(described_class.from_today).to eq TimeCalc::Value.new(Date.today)
     end
-  end
 
-  describe 'weekday conversions' do
-    %i[sunday monday tuesday wednesday thursday friday saturday].each_with_index do |name, wday|
-      context "for #{name}" do
-        subject { calc.round(name) }
-
-        its(:wday) { is_expected.to eq wday }
-      end
+    it 'has shortcuts for op creation' do
+      expect(described_class.+(5, :days).floor(:hour))
+        .to be_an(TimeCalc::Op).and have_attributes(chain: [[:+, 5, :days], [:floor, :hour]])
     end
   end
 end

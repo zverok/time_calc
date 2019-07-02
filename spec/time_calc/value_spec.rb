@@ -21,11 +21,19 @@ RSpec.describe TimeCalc::Value do
       is_expected.to raise_error ArgumentError
     }
 
-    o1 = Object.new.tap { |obj| def obj.to_time; t('2019-06-28 14:28:48.123 +03') end }
+    o1 = Object.new.tap { |obj|
+      def obj.to_time
+        t('2019-06-28 14:28:48.123 +03')
+      end
+    }
     its_call(o1) {
       is_expected.to ret be_a(described_class).and have_attributes(unwrap: t('2019-06-28 14:28:48.123 +03'))
     }
-    o2 = Object.new.tap { |obj| def obj.to_time; '2019-06-28 14:28:48.123 +03' end } # not something time-alike
+    o2 = Object.new.tap { |obj| # not something time-alike
+      def obj.to_time
+        '2019-06-28 14:28:48.123 +03'
+      end
+    }
     its_call(o2) {
       is_expected.to raise_error ArgumentError
     }

@@ -19,8 +19,8 @@ class TimeCalc
       new(Date.today)
     end
 
-    def from(time)
-      Value.new(time)
+    def from(date_or_time)
+      Value.new(date_or_time)
     end
 
     def from_now
@@ -32,15 +32,23 @@ class TimeCalc
     end
   end
 
-  def initialize(time)
-    @value = Value.new(time)
+  # @private
+  attr_reader :value
+
+  def initialize(date_or_time)
+    @value = Value.new(date_or_time)
   end
 
   def inspect
-    '<%s(%s)>' % [self.class, @value.unwrap]
+    '#<%s(%s)>' % [self.class, @value.unwrap]
   end
 
-  OPERATIONS = %i[merge truncate floor ceil round + -].freeze
+  def ==(other)
+    other.is_a?(self.class) && other.value == value
+  end
+
+  MATH_OPERATIONS = %i[merge truncate floor ceil round + -].freeze
+  OPERATIONS = MATH_OPERATIONS.+(%i[to step for]).freeze
 
   OPERATIONS.each do |name|
     define_method(name) { |*args|
@@ -49,7 +57,7 @@ class TimeCalc
   end
 
   class << self
-    OPERATIONS.each do |name|
+    MATH_OPERATIONS.each do |name|
       define_method(name) { |*args| Op.new([[name, *args]]) }
     end
   end

@@ -51,6 +51,10 @@ class TimeCalc
       to(from.+(span, unit))
     end
 
+    def ==(other)
+      other.is_a?(self.class) && from == other.from && to == other.to && step == other.step
+    end
+
     private
 
     def direction

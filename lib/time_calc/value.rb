@@ -102,6 +102,11 @@ class TimeCalc
       Sequence.new(from: self).step(span, unit)
     end
 
+    def for(span, unit)
+      to(self.+(span, unit))
+    end
+
+    # @private
     def convert(klass)
       return dup if internal.class == klass
 
