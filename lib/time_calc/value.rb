@@ -5,6 +5,7 @@ require 'backports/2.6.0/array/to_h'
 require 'backports/2.6.0/hash/to_h'
 require 'backports/2.6.0/kernel/then'
 require 'backports/2.5.0/hash/slice'
+require 'backports/2.5.0/enumerable/all'
 
 class TimeCalc
   class Value
