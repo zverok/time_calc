@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class TimeCalc
+  # @private
+  # Unit-related constants and utilities for fetching their values
   module Units
     ALL = %i[year month week day hour min sec].freeze
     NATURAL = %i[year month day hour min sec].freeze
@@ -37,6 +39,19 @@ class TimeCalc
     def self.call(unit)
       SYNONYMS.fetch(unit, unit)
               .tap { |u| ALL.include?(u) or fail ArgumentError, "Unsupported unit: #{u}" }
+    end
+
+    def self.multiplier_for(klass, unit, precise: false)
+      res = MULTIPLIERS.fetch(unit)
+      d = MULTIPLIERS.fetch(:day)
+      case klass.name
+      when 'Time'
+        res
+      when 'DateTime'
+        res / d.to_f
+      when 'Date'
+        precise ? res / d.to_f : res / d
+      end
     end
   end
 end

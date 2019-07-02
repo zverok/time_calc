@@ -17,7 +17,7 @@ class TimeCalc
     end
 
     def call(time)
-      @chain.reduce(Value.new(time)) { |val, (name, *args)| val.public_send(name, *args) }.to_time
+      @chain.reduce(Value.new(time)) { |val, (name, *args)| val.public_send(name, *args) }.unwrap
     end
 
     def to_proc

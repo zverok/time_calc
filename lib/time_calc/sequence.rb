@@ -5,14 +5,14 @@ class TimeCalc
     attr_reader :from
 
     def initialize(from:, to: nil, step: nil)
-      @from = Value.(from)
-      @to = to&.then(&Value.method(:call))
+      @from = Value.wrap(from)
+      @to = to&.then(&Value.method(:wrap))
       @step = step
     end
 
     def inspect
       '#<%s (%s - %s):step(%s)>' %
-        [self.class, @from.to_time, @to&.to_time || '...', @step&.join(' ') || '???']
+        [self.class, @from.unwrap, @to&.unwrap || '...', @step&.join(' ') || '???']
     end
 
     alias to_s inspect
@@ -26,10 +26,10 @@ class TimeCalc
 
       cur = @from
       while matching_direction?(cur)
-        yield cur.to_time
+        yield cur.unwrap
         cur = cur.+(*@step) # rubocop:disable Style/SelfAssignment
       end
-      yield cur.to_time if cur.to_time == @to.to_time
+      yield cur.unwrap if cur == @to
     end
 
     include Enumerable
@@ -58,7 +58,7 @@ class TimeCalc
     end
 
     def matching_direction?(val)
-      !@to || (@to.to_time <=> val.to_time) == direction
+      !@to || (@to <=> val) == direction
     end
   end
 end

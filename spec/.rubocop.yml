@@ -1,0 +1,26 @@
+inherit_from: ../.rubocop.yml
+
+RSpec/ImplicitSubject:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+RSpec/EmptyExampleGroup:
+  CustomIncludeMethods:
+    - its
+    - its_call
+    - its_block
+    - its_map
+
+Style/SymbolArray:
+  Enabled: false
+
+RSpec/DescribeMethod:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false

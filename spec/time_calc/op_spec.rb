@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe TimeCalc::Op do
   subject(:op) { described_class.new([[:+, 1, :day], [:round, :hour]]) }
 

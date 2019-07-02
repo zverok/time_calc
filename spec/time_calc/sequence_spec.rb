@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 RSpec.describe TimeCalc::Sequence do
   subject(:seq) { described_class.new(**args) }
+
   let(:args) { {from: vt('2019-06-01 14:30'), to: vt('2019-06-05 17:20'), step: [1, :day]} }
 
   its(:inspect) {
@@ -30,6 +33,7 @@ RSpec.describe TimeCalc::Sequence do
 
     context 'when to is not defined' do
       subject { enum.first(6) }
+
       let(:args) { super().slice(:from, :step) }
 
       it {
@@ -52,7 +56,7 @@ RSpec.describe TimeCalc::Sequence do
           t('2019-06-05 14:30'),
           t('2019-06-04 14:30'),
           t('2019-06-03 14:30'),
-          t('2019-06-02 14:30'),
+          t('2019-06-02 14:30')
         ]
       }
     end

@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
+require 'date'
+require 'time'
+
 require_relative 'time_calc/units'
+require_relative 'time_calc/types'
 require_relative 'time_calc/value'
 
 class TimeCalc
@@ -11,12 +15,20 @@ class TimeCalc
       new(Time.now)
     end
 
+    def today
+      new(Date.today)
+    end
+
     def from(time)
       Value.new(time)
     end
 
     def from_now
       from(Time.now)
+    end
+
+    def from_today
+      from(Date.today)
     end
   end
 
@@ -25,13 +37,15 @@ class TimeCalc
   end
 
   def inspect
-    '<%s(%p)>' % [self.class, @value.to_time]
+    '<%s(%s)>' % [self.class, @value.unwrap]
   end
 
   OPERATIONS = %i[merge truncate floor ceil round + -].freeze
 
   OPERATIONS.each do |name|
-    define_method(name) { |*args| @value.public_send(name, *args).to_time }
+    define_method(name) { |*args|
+      @value.public_send(name, *args).then { |res| res.is_a?(Value) ? res.unwrap : res }
+    }
   end
 
   class << self

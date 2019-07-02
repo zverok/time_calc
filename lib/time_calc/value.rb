@@ -8,63 +8,48 @@ require 'backports/2.5.0/hash/slice'
 
 class TimeCalc
   class Value
-    def self.call(value)
+    TIMEY = proc { |t| t.respond_to?(:to_time) }
+
+    def self.wrap(value)
       case value
-      when Time
+      when Time, Date, DateTime
         new(value)
       when Value
         value
+      when TIMEY
+        wrap(value.to_time)
       else
         fail ArgumentError, "Unsupported value: #{value}"
       end
     end
 
-    def self.from_h(hash, utc_offset: Time.now.utc_offset)
-      hash
-        .slice(*Units::STRUCTURAL)
-        .merge(Units::DEFAULTS) { |_k, val, empty| val || empty }
-        .tap { |h| h[:sec] += h.delete(:subsec) }
-        .values
-        .then { |components| Value.new(Time.new(*components, utc_offset)) }
+    # @private
+    attr_reader :internal
+
+    def initialize(time_or_date)
+      @internal = time_or_date
     end
 
-    def initialize(time)
-      @time = time
-    end
-
-    def to_time
-      @time
+    def unwrap
+      @internal
     end
 
     def inspect
-      '#<%s(%p)>' % [self.class, to_time]
+      '#<%s(%s)>' % [self.class, internal]
     end
 
     def <=>(other)
       return unless other.is_a?(self.class)
 
-      to_time <=> other.to_time
+      Types.compare(internal, other.internal)
     end
 
     include Comparable
 
-    Units::ALL.each { |u| define_method(u) { self[u] } }
-
-    def [](unit)
-      Units::STRUCTURAL.include?(unit) or fail KeyError, "Undefined unit: #{unit}"
-      @time.public_send(unit)
-    end
-
-    def values_at(*units)
-      units.map(&method(:[]))
-    end
-
-    def to_h
-      Units::STRUCTURAL.to_h { |u| [u, self[u]] }
-    end
+    Units::ALL.each { |u| define_method(u) { internal.public_send(u) } }
 
     def merge(**attrs)
-      Value.from_h(to_h.merge(attrs), utc_offset: to_time.utc_offset)
+      Value.new(Types.public_send("merge_#{internal.class.name.downcase}", internal, **attrs))
     end
 
     def truncate(unit)
@@ -87,20 +72,20 @@ class TimeCalc
     def round(unit)
       f, c = floor(unit), ceil(unit)
 
-      (to_time - f.to_time).abs < (to_time - c.to_time).abs ? f : c
+      (internal - f.internal).abs < (internal - c.internal).abs ? f : c
     end
 
     def +(span, unit = nil)
       unit = Units.(unit)
       case unit
       when :sec, :min, :hour, :day
-        Value.new(to_time + span * Units::MULTIPLIERS.fetch(unit))
+        Value.new(internal + span * Units.multiplier_for(internal.class, unit))
       when :week
         self.+(span * 7, :day)
       when :month
         plus_months(span)
       when :year
-        merge(year: to_time.year + span)
+        merge(year: year + span)
       end
     end
 
@@ -117,18 +102,24 @@ class TimeCalc
       Sequence.new(from: self).step(span, unit)
     end
 
+    def convert(klass)
+      return dup if internal.class == klass
+
+      Value.new(Types.convert(internal, klass))
+    end
+
     private
 
     def floor_week
-      extra_days = (to_time.wday.nonzero? || 7) - 1
+      extra_days = (internal.wday.nonzero? || 7) - 1
       floor(:day).-(extra_days, :days)
     end
 
     def plus_months(span)
-      target = to_time.month + span.to_i
+      target = month + span.to_i
       m = (target - 1) % 12 + 1
       dy = (target - 1) / 12
-      merge(year: to_time.year + dy, month: m)
+      merge(year: year + dy, month: m)
     end
   end
 end

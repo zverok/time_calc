@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.xdescribe TimeCalc do
   subject(:calc) { described_class.new(start) }
 
@@ -35,7 +37,7 @@ RSpec.xdescribe TimeCalc do
       %i[day days],
       %i[week weeks],
       %i[month months],
-      %i[year years],
+      %i[year years]
     ].each do |synonyms|
       context "with #{synonyms.join('/')}" do
         subject { synonyms.map { |unit| calc.+(1, unit) } }
@@ -49,6 +51,7 @@ RSpec.xdescribe TimeCalc do
     %i[sunday monday tuesday wednesday thursday friday saturday].each_with_index do |name, wday|
       context "for #{name}" do
         subject { calc.round(name) }
+
         its(:wday) { is_expected.to eq wday }
       end
     end
