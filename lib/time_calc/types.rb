@@ -2,7 +2,7 @@
 
 class TimeCalc
   # @private
-  # Tries to incapsulate all the differences between Time, Date, DateTime
+  # Tries to encapsulate all the differences between Time, Date, DateTime
   module Types
     extend self
 

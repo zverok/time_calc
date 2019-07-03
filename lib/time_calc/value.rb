@@ -9,8 +9,10 @@ require 'backports/2.5.0/enumerable/all'
 
 class TimeCalc
   class Value
+    # @private
     TIMEY = proc { |t| t.respond_to?(:to_time) }
 
+    # @private
     def self.wrap(value)
       case value
       when Time, Date, DateTime
@@ -27,18 +29,22 @@ class TimeCalc
     # @private
     attr_reader :internal
 
+    # @param time_or_date [Time, Date, DateTime]
     def initialize(time_or_date)
       @internal = time_or_date
     end
 
+    # @return [Time, Date, DateTime] The value of the original type that was wrapped and processed
     def unwrap
       @internal
     end
 
+    # @private
     def inspect
       '#<%s(%s)>' % [self.class, internal]
     end
 
+    # @return [1, 0, -1]
     def <=>(other)
       return unless other.is_a?(self.class)
 
@@ -49,10 +55,27 @@ class TimeCalc
 
     Units::ALL.each { |u| define_method(u) { internal.public_send(u) } }
 
+    # Produces new value with some comonents of underlying time/date replaced.
+    #
+    # @example
+    #    TimeCalc.from(Date.parse('2018-06-01')).merge(year: 1983)
+    #    # => #<TimeCalc::Value(1983-06-01)>
+    #
+    # @param attrs [Hash<Symbol => Integer>]
+    # @return [Value]
     def merge(**attrs)
       Value.new(Types.public_send("merge_#{internal.class.name.downcase}", internal, **attrs))
     end
 
+    # Truncates all time components lower than `unit`. In other words, "floors" (rounds down)
+    # underlying date/time to nearest `unit`.
+    #
+    # @example
+    #   TimeCalc.from(Time.parse('2018-06-23 12:30')).floor(:month)
+    #   # => #<TimeCalc::Value(2018-06-01 00:00:00 +0300)>
+    #
+    # @param unit [Symbol]
+    # @return Value
     def truncate(unit)
       unit = Units.(unit)
       return floor_week if unit == :week
@@ -66,17 +89,36 @@ class TimeCalc
 
     alias floor truncate
 
+    # Ceils (rounds up) underlying date/time to nearest `unit`.
+    #
+    # @example
+    #   TimeCalc.from(Time.parse('2018-06-23 12:30')).ceil(:month)
+    #   # => #<TimeCalc::Value(2018-07-01 00:00:00 +0300)>
+    #
+    # @param unit [Symbol]
+    # @return [Value]
     def ceil(unit)
       floor(unit).then { |res| res == self ? res : res.+(1, unit) }
     end
 
+    # Rounds up or down underlying date/time to nearest `unit`.
+    #
+    # @example
+    #   TimeCalc.from(Time.parse('2018-06-23 12:30')).round(:month)
+    #   # => #<TimeCalc::Value(2018-07-01 00:00:00 +0300)>
+    #
+    # @param unit [Symbol]
+    # @return Value
     def round(unit)
       f, c = floor(unit), ceil(unit)
 
       (internal - f.internal).abs < (internal - c.internal).abs ? f : c
     end
 
-    def +(span, unit = nil)
+    # @param span [Integer]
+    # @param unit [Symbol]
+    # @return [Value]
+    def +(span, unit)
       unit = Units.(unit)
       case unit
       when :sec, :min, :hour, :day
@@ -90,19 +132,44 @@ class TimeCalc
       end
     end
 
+    # @overload -(span, unit)
+    #   @param span [Integer]
+    #   @param unit [Symbol]
+    #   @return [Value]
+    # @overload -(date_or_time)
+    #   @param date_or_time [Date, Time, DateTime]
+    #   @return [Diff]
     def -(span_or_other, unit = nil)
       unit.nil? ? Diff.new(self, span_or_other) : self.+(-span_or_other, unit)
     end
 
-    def to(tm)
-      Sequence.new(from: self).to(tm)
+    # Produces {Sequence} from this value to `date_or_time`
+    #
+    # @param date_or_time [Date, Time, DateTime]
+    # @return [Sequence]
+    def to(date_or_time)
+      Sequence.new(from: self).to(date_or_time)
     end
 
+    # Produces endless {Sequence} from this value, with step specified.
+    #
+    # @overload step(unit)
+    #   Shortcut for `step(1, unit)`
+    #   @param unit [Symbol]
+    # @overload step(span, unit)
+    #   @param span [Integer]
+    #   @param unit [Symbol]
+    # @return [Sequence]
     def step(span, unit = nil)
       span, unit = 1, span if unit.nil?
       Sequence.new(from: self).step(span, unit)
     end
 
+    # Produces {Sequence} from this value to `this + <span units>`
+    #
+    # @param span [Integer]
+    # @param unit [Symbol]
+    # @return [Sequence]
     def for(span, unit)
       to(self.+(span, unit))
     end

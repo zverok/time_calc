@@ -43,3 +43,6 @@ Style/SignalException:
 
 Metrics/MethodLength:
   Max: 15
+
+Style/AsciiComments:
+  Enabled: false
