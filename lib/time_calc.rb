@@ -196,6 +196,36 @@ class TimeCalc
   #     @return [Diff]
   #   @return [Time or Diff]
 
+  # @!method to(date_or_time)
+  #   Produces {Sequence} from this value to `date_or_time`
+  #
+  #   @param date_or_time [Date, Time, DateTime]
+  #   @return [Sequence]
+
+  # @!method step(span, unit = nil)
+  #   Produces endless {Sequence} from this value, with step specified.
+  #
+  #   @overload step(unit)
+  #     Shortcut for `step(1, unit)`
+  #     @param unit [Symbol]
+  #   @overload step(span, unit)
+  #     @example
+  #       TimeCalc.(Time.parse('2019-06-01 14:50')).step(1, :day).take(3)
+  #       # => [2019-06-01 14:50:00 +0300, 2019-06-02 14:50:00 +0300, 2019-06-03 14:50:00 +0300]
+  #     @param span [Integer]
+  #     @param unit [Symbol]
+  #   @return [Sequence]
+
+  # @!method for(span, unit)
+  #   Produces {Sequence} from this value to `this + <span units>`
+  #
+  #   @example
+  #     TimeCalc.(Time.parse('2019-06-01 14:50')).for(2, :weeks).step(1, :day).count
+  #     # => 15
+  #   @param span [Integer]
+  #   @param unit [Symbol]
+  #   @return [Sequence]
+
   # @private
   MATH_OPERATIONS = %i[merge truncate floor ceil round + -].freeze
   # @private

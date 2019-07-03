@@ -25,9 +25,30 @@ class TimeCalc
       '<%s %s>' % [self.class, @chain.map { |name, *args| "#{name}(#{args.join(' ')})" }.join('.')]
     end
 
-    TimeCalc::OPERATIONS.each do |name|
+    TimeCalc::MATH_OPERATIONS.each do |name|
       define_method(name) { |*args| Op.new([*@chain, [name, *args]]) }
     end
+
+    # @!method +(span, unit)
+    #   Adds `+(span, unit)` to method chain
+    #   @see TimeCalc#+
+    #   @return [Op]
+    # @!method -(span, unit)
+    #   Adds `-(span, unit)` to method chain
+    #   @see TimeCalc#-
+    #   @return [Op]
+    # @!method floor(unit)
+    #   Adds `floor(span, unit)` to method chain
+    #   @see TimeCalc#floor
+    #   @return [Op]
+    # @!method ceil(unit)
+    #   Adds `ceil(span, unit)` to method chain
+    #   @see TimeCalc#ceil
+    #   @return [Op]
+    # @!method round(unit)
+    #   Adds `round(span, unit)` to method chain
+    #   @see TimeCalc#round
+    #   @return [Op]
 
     # Performs the whole chain of operation on parameter, returning the result.
     #
