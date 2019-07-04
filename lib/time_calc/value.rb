@@ -8,6 +8,13 @@ require 'backports/2.5.0/hash/slice'
 require 'backports/2.5.0/enumerable/all'
 
 class TimeCalc
+  # Wrapper (one can say "monad") around date/time value, allowing to perform several TimeCalc
+  # operations in a chain.
+  #
+  # @example
+  #   TimeCalc.wrap(Time.parse('2019-06-01 14:50')).+(1, :year).-(1, :month).round(:week).unwrap
+  #   # => 2020-05-04 00:00:00 +0300
+  #
   class Value
     # @private
     TIMEY = proc { |t| t.respond_to?(:to_time) }
@@ -29,6 +36,8 @@ class TimeCalc
     # @private
     attr_reader :internal
 
+    # @note
+    #   Prefer {TimeCalc.wrap} to create a Value.
     # @param time_or_date [Time, Date, DateTime]
     def initialize(time_or_date)
       @internal = time_or_date
@@ -55,7 +64,7 @@ class TimeCalc
 
     Units::ALL.each { |u| define_method(u) { internal.public_send(u) } }
 
-    # Produces new value with some comonents of underlying time/date replaced.
+    # Produces new value with some components of underlying time/date replaced.
     #
     # @example
     #    TimeCalc.from(Date.parse('2018-06-01')).merge(year: 1983)
@@ -115,6 +124,8 @@ class TimeCalc
       (internal - f.internal).abs < (internal - c.internal).abs ? f : c
     end
 
+    # Add `<span units>` to wrapped value.
+    #
     # @param span [Integer]
     # @param unit [Symbol]
     # @return [Value]
@@ -133,12 +144,15 @@ class TimeCalc
     end
 
     # @overload -(span, unit)
+    #   Subtracts `span units` from wrapped value.
     #   @param span [Integer]
     #   @param unit [Symbol]
     #   @return [Value]
     # @overload -(date_or_time)
+    #   Produces {Diff}, allowing to calculate structured difference between two points in time.
     #   @param date_or_time [Date, Time, DateTime]
     #   @return [Diff]
+    # Subtracts `span units` from wrapped value.
     def -(span_or_other, unit = nil)
       unit.nil? ? Diff.new(self, span_or_other) : self.+(-span_or_other, unit)
     end

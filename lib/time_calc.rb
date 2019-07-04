@@ -46,6 +46,12 @@ require_relative 'time_calc/value'
 # # => [2019-06-14 13:40:00 +0300, 2019-06-14 18:40:00 +0300, 2019-06-14 23:40:00 +0300, ...
 # sequence.first(2)
 # # => [2019-06-14 13:40:00 +0300, 2019-06-14 18:40:00 +0300]
+#
+# # Construct operations to apply as a proc:
+# times = ['2019-06-01 14:30', '2019-06-05 17:10', '2019-07-02 13:40'].map { |t| Time.parse(t) }
+# # => [2019-06-01 14:30:00 +0300, 2019-06-05 17:10:00 +0300, 2019-07-02 13:40:00 +0300]
+# times.map(&TimeCalc.+(1, :week).round(:day))
+# # => [2019-06-09 00:00:00 +0300, 2019-06-13 00:00:00 +0300, 2019-07-10 00:00:00 +0300]
 # ```
 #
 # See method docs below for details and supported arguments.
@@ -241,6 +247,23 @@ class TimeCalc
     MATH_OPERATIONS.each do |name|
       define_method(name) { |*args| Op.new([[name, *args]]) }
     end
+
+    # @!parse
+    #   # Creates operation to perform {#+}`(span, unit)`
+    #   # @return [Op]
+    #   def TimeCalc.+(span, unit); end
+    #   # Creates operation to perform {#-}`(span, unit)`
+    #   # @return [Op]
+    #   def TimeCalc.-(span, unit); end
+    #   # Creates operation to perform {#floor}`(unit)`
+    #   # @return [Op]
+    #   def TimeCalc.floor(unit); end
+    #   # Creates operation to perform {#ceil}`(unit)`
+    #   # @return [Op]
+    #   def TimeCalc.ceil(unit); end
+    #   # Creates operation to perform {#round}`(unit)`
+    #   # @return [Op]
+    #   def TimeCalc.round(unit); end
   end
 end
 

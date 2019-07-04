@@ -1,8 +1,18 @@
 **TimeCalc** tries to provide a way to do **simple time arithmetics** in a modern, readable, idiomatic, no-"magic" Ruby.
 
-_**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time_math2) project. As I decided to change API significantly (completely, in fact) and drop lot of "nice to have but nobody uses" features, it is a new project rather than "absolutely incompatible new version"._
+_**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time_math2) project. As I decided to change API significantly (completely, in fact) and drop lot of "nice to have but nobody uses" features, it is a new project rather than "absolutely incompatible new version". See [API design](#api-design) section to understand how and why TimeCalc is different._
 
-## Synopsys:
+## Features
+
+* Small, clean, pure-Ruby, idiomatic, no monkey-patching, no dependencies (except `backports`);
+* Arithmetic akin to what Ruby numbers provide: `+`/`-`, `floor`/`ceil`/`round`, enumerable sequences (`step`/`to`);
+* Works with `Time`, `Date` and `DateTime` and allows to mix them freely (e.g. create sequences from `Date` to `Time`, calculate their diffs);
+* Tries its best to preserve timezone/offset information:
+  * **on Ruby 2.6+**, for `Time` with real timezones, preserves them;
+  * on Ruby < 2.6, preserves at least `utc_offset` of `Time`;
+  * for `DateTime` preserves zone name.
+
+## Synopsys
 
 ### Arithmetic with units
 
@@ -11,28 +21,25 @@ require 'time_calc'
 
 TC = TimeCalc
 
-t = Time.parse('2018-03-14 08:06:15')
+t = Time.parse('2019-03-14 08:06:15')
 
 TC.(t).+(3, :hours)
+# => 2019-03-14 11:06:15 +0200
+TC.(t).round(:week)
+# => 2019-03-11 00:00:00 +0200
+
 # TimeCalc.call(Time.now) shortcut:
-TC.now.floor(:day) # beginning of the today
-
-TC.now.round(2/7r, :weeks)
-
-TC.(t).-(other) # TimeDiff# to_i(:year), to_f(:year), % :year
-
+TC.now.floor(:day)
+# => beginning of the today
 ```
 
 Operations supported:
+
 * `+`, `-`
 * `ceil`, `round`, `floor`
-* `clamp`
-
-Each operation has two forms: `op(num, unit)` and `op(unit)` (= synonym for `op(1, unit)`). This means
-you can also do `round(3, :hours)` to round to nearest 3-hour mark (0h, 3h, 9h, 12h, 15h...), and
-even `round(1/2r, :hours)` to round to nearest half-an-hour mark.
 
 Units supported:
+
 * `:sec` (also `:second`, `:seconds`);
 * `:min` (`:minute`, `:minutes`);
 * `:hour`/`:hours`;
@@ -41,32 +48,57 @@ Units supported:
 * `:month`/`:months`;
 * `:year`/`:years`.
 
+Timezone preservation on Ruby 2.6:
+
+```ruby
+require 'tzinfo'
+t = Time.new(2019, 9, 1, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev'))
+# => 2019-09-01 14:30:12 +0300
+#                        ^^^^^
+TimeCalc.(t).+(3, :months) # jump over DST: we have +3 in summer and +2 in winter
+# => 2019-12-01 14:30:12 +0200
+#                        ^^^^^
+```
+<small>(Random fun fact: it is Kyiv, not Kiev!)</small>
+
+### Difference of two values
+
+```ruby
+diff = TC.(t) - Time.parse('2019-02-30 16:30')
+# => #<TimeCalc::Diff(2019-03-14 08:06:15 +0200 − 2019-03-02 16:30:00 +0200)>
+diff.days # or any other supported unit
+# => 11
+diff.factorize
+# => {:year=>0, :month=>0, :week=>1, :day=>4, :hour=>15, :min=>36, :sec=>15}
+```
+
+There are several options to [Diff#factorize](http://localhost:8808/docs/TimeCalc/Diff#factorize-instance_method) to obtain the most useful result.
+
 ### Chains of operations
 
 ```ruby
-t = Time.parse('2018-03-14 08:06:15')
-
-TC.with(t).+(1, :hour).round(:min).to_time
+TC.wrap(t).+(1, :hour).round(:min).unwrap
+# => 2019-03-14 09:06:00 +0200
 
 # proc constructor synopsys:
+times = ['2019-06-01 14:30', '2019-06-05 17:10', '2019-07-02 13:40'].map { |t| Time.parse(t) }
 times.map(&TC.+(1, :hour).round(:min))
-
-# First tuesday of current month:
-TC.with_now.floor(:month).ceil(2/7r, :week).to_time
-# It is algorithmically pretty, yet not for everybody's eyes, so this is the synonym:
-TC.with_now.floor(:month).ceil(:tuesday).to_time
+# => [2019-06-01 15:30:00 +0300, 2019-06-05 18:10:00 +0300, 2019-07-02 14:40:00 +0300]
 ```
 
-### Math sequences
+### Enumerable time sequences
 
 ```ruby
 TC.(t).step(2, :weeks)
-TC.(from).upto(to).step(3, :weeks)
-TC.(from).for(3, :years).step(2, :weeks)
+# => #<TimeCalc::Sequence (2019-03-14 08:06:15 +0200 - ...):step(2 weeks)>
+TC.(t).step(2, :weeks).first(3)
+# => [2019-03-14 08:06:15 +0200, 2019-03-28 08:06:15 +0200, 2019-04-11 09:06:15 +0300]
+TC.(t).to(Time.parse('2019-04-30 16:30')).step(3, :weeks).to_a
+# => [2019-03-14 08:06:15 +0200, 2019-04-04 09:06:15 +0300, 2019-04-25 09:06:15 +0300]
+TC.(t).for(3, :months).step(4, :weeks).to_a
+# => [2019-03-14 08:06:15 +0200, 2019-04-11 09:06:15 +0300, 2019-05-09 09:06:15 +0300, 2019-06-06 09:06:15 +0300]
 ```
 
-### Utility methods
+## API design
 
-```ruby
-TC.(t).merge(year: 2001)
-```
+## Credits & license
