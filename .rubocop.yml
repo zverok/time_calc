@@ -8,7 +8,7 @@ AllCops:
   TargetRubyVersion: 2.4
 
 Metrics/LineLength:
-  Enabled: false
+  Max: 100
   IgnoredPatterns: ['\#.*'] # ignore long comments
 
 Style/ParallelAssignment:
@@ -45,4 +45,7 @@ Metrics/MethodLength:
   Max: 15
 
 Style/AsciiComments:
+  Enabled: false
+
+Metrics/ClassLength:
   Enabled: false

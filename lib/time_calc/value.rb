@@ -64,6 +64,12 @@ class TimeCalc
 
     Units::ALL.each { |u| define_method(u) { internal.public_send(u) } }
 
+    def dst?
+      return unless internal.respond_to?(:dst?)
+
+      internal.dst?
+    end
+
     # Produces new value with some components of underlying time/date replaced.
     #
     # @example
@@ -133,7 +139,7 @@ class TimeCalc
       unit = Units.(unit)
       case unit
       when :sec, :min, :hour, :day
-        Value.new(internal + span * Units.multiplier_for(internal.class, unit))
+        plus_seconds(span, unit)
       when :week
         self.+(span * 7, :day)
       when :month
@@ -207,6 +213,17 @@ class TimeCalc
       m = (target - 1) % 12 + 1
       dy = (target - 1) / 12
       merge(year: year + dy, month: m)
+    end
+
+    def plus_seconds(span, unit)
+      Value.new(internal + span * Units.multiplier_for(internal.class, unit))
+           .then { |res| unit == :day ? fix_dst(res) : res }
+    end
+
+    def fix_dst(val)
+      return val if dst?.nil? || dst? == val.dst?
+
+      val.dst? ? val.-(1, :hour) : val.+(1, :hour)
     end
   end
 end
