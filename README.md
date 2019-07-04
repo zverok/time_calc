@@ -101,4 +101,43 @@ TC.(t).for(3, :months).step(4, :weeks).to_a
 
 ## API design
 
-## Credits & license
+The idea of this library (as well as the idea of the previous one) grew of the simple question "how do you say `<some time> + 1 hour` in good Ruby?" This question also leads (me) to notifying that other arithmetical operations (like rounding, or `<value> upto <value> with step <value>`) seem to be applicable to `Time` or `Date` values as well.
+
+Prominent ActiveSupport's answer of extending simple numbers to respond to `1.year` never felt totally right to me. I am not completely against-any-monkey-patches kind of guy, it just doesn't sit right, to say "number has method to produce duration". One of attempts to find an alternative have led me to creation of [time_math2](https://github.com/zverok/time_math2), which gained some (modest) popularity by presenting things this way: `TimeMath.year.advance(time, 1)`.
+
+TBH, using the library myself only eventually, I never been too happy with it: it never felt really natural, so I constantly forgot "what should I do to calculate '2 days ago'". This simplest use case (some time from now) in `TimeMath` looked too far from "how you pronounce it":
+
+```ruby
+# Natural language: 2 days ago
+# "Formalized": now - 2 days
+
+# ActiveSupport:
+Time.now + 2.days
+# also there is 2.days.ago, but I am not a big fan of "1000 synonyms just for naturality"
+
+# TimeMath:
+TimMath.day.decrease(Time.now, 2) # Ughhh what? "Day decrease now 2"?
+```
+
+The though process that led to the new library is:
+
+* `(2, days)` is just a _tuple_ of two unrelated data elements
+* `days` is "internal name that makes sense inside the code", which we represent by `Symbol` in Ruby
+* Math operators can be called just like regular methods: `.+(something)`, which may look unusual at first, but can be super-handy even with simple numbers, in method chaining -- I am grateful to my Verbit's colleague Roman Yarovoy to pointing at that fact (or rather its usefulness);
+* To chain some calculations with Ruby core type without extending this type, we can just "wrap" it into monad-like object, do the calculations, and unwrap at the end (TimeMath itself, and my Hash-processing gem [hm](https://github.com/zverok/hm) have used this approach).
+
+So, here we go:
+```ruby
+TimeCalc.(Time.now).-(2, :days)
+# Small shortcut, as `Time.now` is the frequent start value for such calculations:
+TimeCalc.now.-(2, :days)
+```
+
+The rest of design (see examples above) just followed naturally. There could be different opinions on the approach, but for myself the resulting API looks straightforwar, hard to forget and very regular (in fact, all the hard time calculations, including support for different types, zones, DST and stuff, are done in two core methods, and the rest was easy to define in terms of those methods, which is a sign of consistency).
+
+¯\\\_(ツ)_/¯
+
+## Author & license
+
+[Victor Shepelev](https://zverok.github.io)
+[MIT](https://github.com/zverok/time_calc/blob/master/LICENSE.txt).
