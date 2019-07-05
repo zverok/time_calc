@@ -139,5 +139,5 @@ The rest of design (see examples above) just followed naturally. There could be 
 
 ## Author & license
 
-[Victor Shepelev](https://zverok.github.io)
-[MIT](https://github.com/zverok/time_calc/blob/master/LICENSE.txt).
+* [Victor Shepelev](https://zverok.github.io)
+* [MIT](https://github.com/zverok/time_calc/blob/master/LICENSE.txt).

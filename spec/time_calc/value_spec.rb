@@ -136,9 +136,11 @@ RSpec.describe TimeCalc::Value do
           expect(value.floor(:year).unwrap.zone).to eq zone
         end
 
-        it 'works well over DST' do
-          t = Time.new(2019, 10, 26, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev'))
-          expect(TimeCalc.(t).+(1, :day)).to eq t('2019-10-27 14:30:12 +0200')
+        it 'works well over DST' do # rubocop:disable RSpec/MultipleExpectations
+          t1 = Time.new(2019, 10, 26, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev'))
+          t2 = Time.new(2019, 10, 27, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev'))
+          expect(TimeCalc.(t1).+(1, :day)).to eq t2
+          expect(TimeCalc.(t2).-(1, :day)).to eq t1
         end
       end
     end

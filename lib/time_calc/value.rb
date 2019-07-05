@@ -217,13 +217,7 @@ class TimeCalc
 
     def plus_seconds(span, unit)
       Value.new(internal + span * Units.multiplier_for(internal.class, unit))
-           .then { |res| unit == :day ? fix_dst(res) : res }
-    end
-
-    def fix_dst(val)
-      return val if dst?.nil? || dst? == val.dst?
-
-      val.dst? ? val.-(1, :hour) : val.+(1, :hour)
+           .then { |res| unit == :day ? DST.fix_value(res, self) : res }
     end
   end
 end

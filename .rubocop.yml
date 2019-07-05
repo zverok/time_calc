@@ -49,3 +49,6 @@ Style/AsciiComments:
 
 Metrics/ClassLength:
   Enabled: false
+
+Style/EmptyCaseCondition:
+  Enabled: false

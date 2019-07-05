@@ -227,11 +227,10 @@ class TimeCalc
     end
 
     def simple_div(t1, t2, unit)
-      if Types.compatible?(t1, t2)
-        t1.-(t2).div(Units.multiplier_for(t1.class, unit, precise: true))
-      else
-        t1.to_time.-(t2.to_time).div(Units.multiplier_for(Time, unit))
-      end
+      return simple_div(t1.to_time, t2.to_time, unit) unless Types.compatible?(t1, t2)
+
+      t1.-(t2).div(Units.multiplier_for(t1.class, unit, precise: true))
+        .then { |res| unit == :day ? DST.fix_day_diff(t1, t2, res) : res }
     end
 
     def month_div # rubocop:disable Metrics/AbcSize -- well... at least it is short

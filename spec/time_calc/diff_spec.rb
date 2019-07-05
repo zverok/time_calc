@@ -53,9 +53,32 @@ RSpec.describe TimeCalc::Diff do
       its_call(1, :month) { is_expected.to ret [12, t('2020-06-01 00:00 +03')] }
       its_call(1, :year) { is_expected.to ret [1, t('2020-06-01 00:00 +03')] }
     end
+
+    if RUBY_VERSION >= '2.6'
+      require 'tzinfo'
+
+      context 'when calculated over DST' do
+        context 'when autumn' do
+          let(:before) { Time.new(2019, 10, 26, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev')) }
+          let(:after) { Time.new(2019, 10, 27, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev')) }
+
+          it { expect(described_class.new(after, before).div(:day)).to eq 1 }
+          it { expect(described_class.new(before, after).div(:day)).to eq(-1) }
+        end
+
+        context 'when spring' do
+          let(:before) { Time.new(2019, 3, 30, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev')) }
+          let(:after) { Time.new(2019, 3, 31, 14, 30, 12, TZInfo::Timezone.get('Europe/Kiev')) }
+
+          it { expect(described_class.new(after, before).div(:day)).to eq 1 }
+          it { expect(described_class.new(before, after).div(:day)).to eq(-1) }
+        end
+      end
+    end
   end
 
-  describe '#div'
+  describe '#div' # tested by #divmod, in fact
+
   describe '#modulo' do
     subject { diff.method(:modulo) }
 
