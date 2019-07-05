@@ -27,7 +27,8 @@ class TimeCalc
       return unless tm.respond_to?(:zone) && tm.respond_to?(:dst?)
 
       # We can't say "it is not DST" (like `Time#dst?` will say), only "It is time without DST info"
-      return if tm.zone.nil?
+      # Empty string is what JRuby does when it doesn't know.
+      return if tm.zone.nil? || tm.zone == ''
 
       # Workaround for: https://bugs.ruby-lang.org/issues/15988
       # In Ruby 2.6, Time with "real" Timezone always return `dst? => true` for some zones.
