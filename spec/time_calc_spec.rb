@@ -4,7 +4,7 @@ RSpec.describe TimeCalc do
   describe 'instance' do
     subject(:calc) { described_class.new(start) }
 
-    let(:start) { t('2018-03-01 18:30:45') }
+    let(:start) { t('2018-03-01 18:30:45 +02') }
 
     its(:inspect) { is_expected.to eq '#<TimeCalc(2018-03-01 18:30:45 +0200)>' }
 
