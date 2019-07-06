@@ -32,7 +32,7 @@ class TimeCalc
 
       # Workaround for: https://bugs.ruby-lang.org/issues/15988
       # In Ruby 2.6, Time with "real" Timezone always return `dst? => true` for some zones.
-      # Relates on TZInfo API (which is NOT guaraneed to be present, but practically should be)
+      # Relates on TZInfo API (which is NOT guaranteed to be present, but practically should be)
       tm.zone.respond_to?(:dst?) ? tm.zone.dst?(tm) : tm.dst?
     end
 

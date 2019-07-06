@@ -1,6 +1,12 @@
-**TimeCalc** tries to provide a way to do **simple time arithmetics** in a modern, readable, idiomatic, no-"magic" Ruby.
+# TimeCalc -- next generation of Time arithmetic library
 
-_**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time_math2) project. As I decided to change API significantly (completely, in fact) and drop lot of "nice to have but nobody uses" features, it is a new project rather than "absolutely incompatible new version". See [API design](#api-design) section to understand how and why TimeCalc is different._
+[![Gem Version](https://badge.fury.io/rb/time_calc.svg)](http://badge.fury.io/rb/time_calc)
+[![Build Status](https://travis-ci.org/zverok/time_calc.svg?branch=master)](https://travis-ci.org/zverok/time_calc)
+[![Documentation](http://b.repl.ca/v1/yard-docs-blue.png)](http://rubydoc.info/gems/time_calc/frames)
+
+**TimeCalc** tries to provide a way to do **simple time arithmetic** in a modern, readable, idiomatic, no-"magic" Ruby.
+
+_**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time_math2) project. As I decided to change API significantly (completely, in fact) and drop a lot of "nice to have but nobody uses" features, it is a new project rather than "absolutely incompatible new version". See [API design](#api-design) section to understand how and why TimeCalc is different._
 
 ## Features
 
@@ -12,7 +18,7 @@ _**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time
   * on Ruby < 2.6, preserves at least `utc_offset` of `Time`;
   * for `DateTime` preserves zone name.
 
-## Synopsys
+## Synopsis
 
 ### Arithmetic with units
 
@@ -72,7 +78,7 @@ diff.factorize
 # => {:year=>0, :month=>0, :week=>1, :day=>4, :hour=>15, :min=>36, :sec=>15}
 ```
 
-There are several options to [Diff#factorize](http://localhost:8808/docs/TimeCalc/Diff#factorize-instance_method) to obtain the most useful result.
+There are several options to [Diff#factorize](https://www.rubydoc.info/gems/time_calc/TimeCalc/Diff#factorize-instance_method) to obtain the most useful result.
 
 ### Chains of operations
 
@@ -101,11 +107,11 @@ TC.(t).for(3, :months).step(4, :weeks).to_a
 
 ## API design
 
-The idea of this library (as well as the idea of the previous one) grew of the simple question "how do you say `<some time> + 1 hour` in good Ruby?" This question also leads (me) to notifying that other arithmetical operations (like rounding, or `<value> upto <value> with step <value>`) seem to be applicable to `Time` or `Date` values as well.
+The idea of this library (as well as the idea of the previous one) grew of the simple question "how do you say `<some time> + 1 hour` in good Ruby?" This question also leads (me) to notifying that other arithmetical operations (like rounding, or `<value> up to <value> with step <value>`) seem to be applicable to `Time` or `Date` values as well.
 
-Prominent ActiveSupport's answer of extending simple numbers to respond to `1.year` never felt totally right to me. I am not completely against-any-monkey-patches kind of guy, it just doesn't sit right, to say "number has method to produce duration". One of attempts to find an alternative have led me to creation of [time_math2](https://github.com/zverok/time_math2), which gained some (modest) popularity by presenting things this way: `TimeMath.year.advance(time, 1)`.
+Prominent ActiveSupport's answer of extending simple numbers to respond to `1.year` never felt totally right to me. I am not completely against-any-monkey-patches kind of guy, it just doesn't sit right, to say "number has a method to produce duration". One of the attempts to find an alternative has led me to the creation of [time_math2](https://github.com/zverok/time_math2), which gained some (modest) popularity by presenting things this way: `TimeMath.year.advance(time, 1)`.
 
-TBH, using the library myself only eventually, I never been too happy with it: it never felt really natural, so I constantly forgot "what should I do to calculate '2 days ago'". This simplest use case (some time from now) in `TimeMath` looked too far from "how you pronounce it":
+TBH, using the library myself only eventually, I have never been too happy with it: it never felt really natural, so I constantly forgot "what should I do to calculate '2 days ago'". This simplest use case (some time from now) in `TimeMath` looked too far from "how you pronounce it":
 
 ```ruby
 # Natural language: 2 days ago
@@ -119,12 +125,12 @@ Time.now + 2.days
 TimMath.day.decrease(Time.now, 2) # Ughhh what? "Day decrease now 2"?
 ```
 
-The though process that led to the new library is:
+The thought process that led to the new library is:
 
 * `(2, days)` is just a _tuple_ of two unrelated data elements
 * `days` is "internal name that makes sense inside the code", which we represent by `Symbol` in Ruby
 * Math operators can be called just like regular methods: `.+(something)`, which may look unusual at first, but can be super-handy even with simple numbers, in method chaining -- I am grateful to my Verbit's colleague Roman Yarovoy to pointing at that fact (or rather its usefulness);
-* To chain some calculations with Ruby core type without extending this type, we can just "wrap" it into monad-like object, do the calculations, and unwrap at the end (TimeMath itself, and my Hash-processing gem [hm](https://github.com/zverok/hm) have used this approach).
+* To chain some calculations with Ruby core type without extending this type, we can just "wrap" it into a monad-like object, do the calculations, and unwrap at the end (TimeMath itself, and my Hash-processing gem [hm](https://github.com/zverok/hm) have used this approach).
 
 So, here we go:
 ```ruby
@@ -133,7 +139,7 @@ TimeCalc.(Time.now).-(2, :days)
 TimeCalc.now.-(2, :days)
 ```
 
-The rest of design (see examples above) just followed naturally. There could be different opinions on the approach, but for myself the resulting API looks straightforwar, hard to forget and very regular (in fact, all the hard time calculations, including support for different types, zones, DST and stuff, are done in two core methods, and the rest was easy to define in terms of those methods, which is a sign of consistency).
+The rest of the design (see examples above) just followed naturally. There could be different opinions on the approach, but for myself the resulting API looks straightforward, hard to forget and very regular (in fact, all the hard time calculations, including support for different types, zones, DST and stuff, are done in two core methods, and the rest was easy to define in terms of those methods, which is a sign of consistency).
 
 ¯\\\_(ツ)_/¯
 

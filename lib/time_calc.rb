@@ -8,7 +8,7 @@ require_relative 'time_calc/types'
 require_relative 'time_calc/dst'
 require_relative 'time_calc/value'
 
-# Module for time arithmetics.
+# Module for time arithmetic.
 #
 # Examples of usage:
 #
