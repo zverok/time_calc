@@ -9,17 +9,17 @@ RSpec.describe TimeCalc do
     its(:inspect) { is_expected.to eq '#<TimeCalc(2018-03-01 18:30:45 +0200)>' }
 
     it 'delegates operations that return time' do
-      expect(calc.+(2, :days)).to eq t('2018-03-03 18:30:45')
-      expect(calc.-(2, :days)).to eq t('2018-02-27 18:30:45')
-      expect(calc.floor(:day)).to eq t('2018-03-01')
-      expect(calc.ceil(:day)).to eq t('2018-03-02')
-      expect(calc.round(:day)).to eq t('2018-03-02')
+      expect(calc.+(2, :days)).to eq t('2018-03-03 18:30:45 +02')
+      expect(calc.-(2, :days)).to eq t('2018-02-27 18:30:45 +02')
+      expect(calc.floor(:day)).to eq t('2018-03-01 00:00:00 +02')
+      expect(calc.ceil(:day)).to eq t('2018-03-02 00:00:00 +02')
+      expect(calc.round(:day)).to eq t('2018-03-02 00:00:00 +02')
     end
 
     it 'delegates operations that return sequences' do
       expect(calc.to(t('2019-01-01'))).to eq TimeCalc::Sequence.new(from: start, to: t('2019-01-01'))
       expect(calc.step(3, :days)).to eq TimeCalc::Sequence.new(from: start, step: [3, :days])
-      expect(calc.for(3, :days)).to eq TimeCalc::Sequence.new(from: start, to: t('2018-03-04 18:30:45'))
+      expect(calc.for(3, :days)).to eq TimeCalc::Sequence.new(from: start, to: t('2018-03-04 18:30:45 +02'))
     end
 
     it 'delegates operations that return diff' do
