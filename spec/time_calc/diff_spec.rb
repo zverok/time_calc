@@ -45,13 +45,13 @@ RSpec.describe TimeCalc::Diff do
     end
 
     context 'with different types' do
-      let(:diff) { described_class.new(t('2020-06-12 12:28 +03'), d('2019-06-01')) }
+      let(:diff) { described_class.new(t('2020-06-12 12:28 +05'), d('2019-06-01')) }
 
-      its_call(1, :hour) { is_expected.to ret [9060, t('2020-06-12 12:00 +03')] }
-      its_call(1, :day) { is_expected.to ret [377, t('2020-06-12 00:00 +03')] }
-      its_call(1, :week) { is_expected.to ret [53, t('2020-06-06 00:00 +03')] }
-      its_call(1, :month) { is_expected.to ret [12, t('2020-06-01 00:00 +03')] }
-      its_call(1, :year) { is_expected.to ret [1, t('2020-06-01 00:00 +03')] }
+      its_call(1, :hour) { is_expected.to ret [9060, t('2020-06-12 12:00 +05')] }
+      its_call(1, :day) { is_expected.to ret [377, t('2020-06-12 00:00 +05')] }
+      its_call(1, :week) { is_expected.to ret [53, t('2020-06-06 00:00 +05')] }
+      its_call(1, :month) { is_expected.to ret [12, t('2020-06-01 00:00 +05')] }
+      its_call(1, :year) { is_expected.to ret [1, t('2020-06-01 00:00 +05')] }
     end
 
     if RUBY_VERSION >= '2.6'

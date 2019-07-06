@@ -40,8 +40,7 @@ class TimeCalc
     # @param from [Time,Date,DateTime]
     # @param to [Time,Date,DateTime]
     def initialize(from, to)
-      @from = Value.wrap(from)
-      @to = Value.wrap(to)
+      @from, @to = coerce(try_unwrap(from), try_unwrap(to)).map(&Value.method(:wrap))
     end
 
     # @private
@@ -68,9 +67,7 @@ class TimeCalc
     # @return [(Integer, Time or Date or DateTime)]
     def divmod(span, unit = nil)
       span, unit = 1, span if unit.nil?
-      div(span, unit).then { |res|
-        [res, to.convert(from.unwrap.class).+(res * span, unit).unwrap]
-      }
+      div(span, unit).then { |res| [res, to.+(res * span, unit).unwrap] }
     end
 
     # @example
@@ -162,7 +159,7 @@ class TimeCalc
     # @return [Hash<Symbol => Integer>]
     def factorize(zeroes: true, max: :year, min: :sec, weeks: true)
       t = to
-      f = from.convert(Time) # otherwise Date-sourced factorization is broken
+      f = from
       select_units(max: Units.(max), min: Units.(min), weeks: weeks)
         .inject({}) { |res, unit|
           span, t = Diff.new(f, t).divmod(unit)
@@ -202,17 +199,6 @@ class TimeCalc
 
     private
 
-    def select_units(max:, min:, weeks:)
-      Units::ALL
-        .drop_while { |u| u != max }
-        .reverse.drop_while { |u| u != min }.reverse
-        .then { |list|
-          next list if weeks
-
-          list - %i[week]
-        }
-    end
-
     def singular_div(unit)
       case unit
       when :sec, :min, :hour, :day
@@ -240,6 +226,66 @@ class TimeCalc
 
     def year_div
       from.year.-(to.year).then { |res| to.merge(year: from.year) <= from ? res : res - 1 }
+    end
+
+    def select_units(max:, min:, weeks:)
+      Units::ALL
+        .drop_while { |u| u != max }
+        .reverse.drop_while { |u| u != min }.reverse
+        .then { |list|
+          next list if weeks
+
+          list - %i[week]
+        }
+    end
+
+    def try_unwrap(tm)
+      tm.respond_to?(:unwrap) ? tm.unwrap : tm
+    end
+
+    def coerce(from, to)
+      case
+      when from.class != to.class
+        coerce_classes(from, to)
+      when zone(from) != zone(to)
+        coerce_zones(from, to)
+      else
+        [from, to]
+      end
+    end
+
+    def zone(tm)
+      case tm
+      when Time
+        # "" is JRuby's way to say "I don't know zone"
+        tm.zone&.then { |z| z == '' ? nil : z } || tm.utc_offset
+      when Date
+        nil
+      when DateTime
+        tm.zone
+      end
+    end
+
+    def coerce_classes(from, to)
+      case
+      when from.class == Date # not is_a?(Date), it will catch DateTime
+        [coerce_date(from, to), to]
+      when to.class == Date
+        [from, coerce_date(to, from)]
+      else
+        [from, to.public_send("to_#{from.class.downcase}")].then(&method(:coerce_zones))
+      end
+    end
+
+    def coerce_zones(from, to)
+      # TODO: to should be in from zone, even if different classes!
+      [from, to]
+    end
+
+    # Will coerce Date to Time or DateTime, with the _zone of the latter_
+    def coerce_date(date, other)
+      TimeCalc.(other)
+        .merge(Units::DEFAULTS.merge(year: date.year, month: date.month, day: date.day))
     end
   end
 end
