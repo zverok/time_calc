@@ -60,6 +60,7 @@ require_relative 'time_calc/value'
 class TimeCalc
   class << self
     alias call new
+    alias [] new
 
     # Shortcut for `TimeCalc.(Time.now)`
     # @return [TimeCalc]
@@ -118,6 +119,9 @@ class TimeCalc
   # ```ruby
   # TimeCalc.(Time.now).round(:hour)
   # # => 2019-07-03 23:00:00 +0300
+  #
+  # # There is another shortcut for those who disapprove on `.()`
+  # TimeCalc[Time.now].+(1, :month)
   # ```
   #
   # See {.from} if you need to perform several math operations on same value.

@@ -28,10 +28,8 @@ class TimeCalc
 
     def merge_time(value, **attrs)
       _merge(value, **attrs)
-        .tap { |h|
-          h[:sec] += h.delete(:subsec)
-          h[:utc_offset] = value.zone if value.zone.respond_to?(:utc_to_local) # Ruby 2.6 real timezones
-        }
+        .tap { |h| h[:sec] += h.delete(:subsec) }
+        .then { |h| fix_time_zone(h, value) }
         .values.then { |components| Time.new(*components) }
     end
 
@@ -49,6 +47,20 @@ class TimeCalc
     end
 
     private
+
+    REAL_TIMEZONE = ->(z) { z.respond_to?(:utc_to_local) } # Ruby 2.6 real timezones
+
+    def fix_time_zone(attrs, origin)
+      case origin.zone
+      when nil, '' # "" is JRuby's way to say "no zone known"
+        attrs
+      when String
+        # Y U NO Hash#except, Ruby???
+        attrs.slice(*attrs.keys.-([:utc_offset])) # Then it would be default, then it would set system's zone
+      when REAL_TIMEZONE
+        attrs.merge(utc_offset: value.zone) # When passed in place of utc_offset, timezone object becomes Time's zone
+      end
+    end
 
     def _merge(value, attrs)
       attr_names = ATTRS.fetch(value.class)

@@ -46,9 +46,19 @@ RSpec.describe TimeCalc::Value do
     its(:inspect) { is_expected.to eq '#<TimeCalc::Value(2019-06-28 14:28:48 +0300)>' }
 
     describe '#merge' do
-      subject { value.method(:merge) }
+      subject(:merge) { value.method(:merge) }
 
       its_call(year: 2018) { is_expected.to ret vt('2018-06-28 14:28:48.123 +03') }
+
+      describe 'source symoblic timezone preservation' do
+        subject { merge.(year: 2018) }
+
+        # Without zone specification, it will have "system" zone, on my machine:
+        #   Time.parse('2019-06-28 14:28:48.123').zone => "EEST"
+        let(:source) { t('2019-06-28 14:28:48.123') }
+
+        its(:'unwrap.zone') { is_expected.to eq source.zone }
+      end
     end
 
     describe '#truncate' do
