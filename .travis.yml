@@ -6,6 +6,10 @@ rvm:
   - "2.5.0"
   - "2.6.0"
   - jruby-9.2.5.0
+matrix:
+  allow_failures:
+    # Some RVM problems with fetching it?..
+    - jruby-9.2.5.0
 install:
   - bundle install --retry=3
 script:
