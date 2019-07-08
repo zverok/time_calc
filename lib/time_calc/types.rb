@@ -58,7 +58,7 @@ class TimeCalc
         # Y U NO Hash#except, Ruby???
         attrs.slice(*attrs.keys.-([:utc_offset])) # Then it would be default, then it would set system's zone
       when REAL_TIMEZONE
-        attrs.merge(utc_offset: value.zone) # When passed in place of utc_offset, timezone object becomes Time's zone
+        attrs.merge(utc_offset: origin.zone) # When passed in place of utc_offset, timezone object becomes Time's zone
       end
     end
 
