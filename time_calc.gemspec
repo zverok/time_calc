@@ -6,6 +6,13 @@ Gem::Specification.new do |s|
   s.authors  = ['Victor Shepelev']
   s.email    = 'zverok.offline@gmail.com'
   s.homepage = 'https://github.com/zverok/time_calc'
+  s.metadata = {
+    'bug_tracker_uri' => 'https://github.com/zverok/time_calc/issues',
+    'changelog_uri' => 'https://github.com/zverok/time_calc/blob/master/Changelog.md',
+    'documentation_uri' => 'https://www.rubydoc.info/gems/time_calc/',
+    'homepage_uri' => 'https://github.com/zverok/time_calc',
+    'source_code_uri' => 'https://github.com/zverok/time_calc'
+  }
 
   s.summary = 'Easy time math'
   s.description = <<-EOF
