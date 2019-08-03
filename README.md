@@ -118,7 +118,7 @@ TBH, using the library myself only eventually, I have never been too happy with 
 # "Formalized": now - 2 days
 
 # ActiveSupport:
-Time.now + 2.days
+Time.now - 2.days
 # also there is 2.days.ago, but I am not a big fan of "1000 synonyms just for naturality"
 
 # TimeMath:
