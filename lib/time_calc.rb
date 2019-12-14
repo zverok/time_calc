@@ -274,10 +274,20 @@ class TimeCalc
   OPERATIONS = MATH_OPERATIONS.+(%i[to step for]).freeze
 
   OPERATIONS.each do |name|
-    define_method(name) { |*args, **kwargs, &block|
-      @value.public_send(name, *args, **kwargs, &block)
-            .then { |res| res.is_a?(Value) ? res.unwrap : res }
-    }
+    # https://bugs.ruby-lang.org/issues/16421 :shrug:
+    # FIXME: In fact, the only kwargs op seem to be merge(...). If the problem is unsolvable,
+    # it is easier to define it separately.
+    if RUBY_VERSION < '2.7'
+      define_method(name) { |*args, &block|
+        @value.public_send(name, *args, &block)
+              .then { |res| res.is_a?(Value) ? res.unwrap : res }
+      }
+    else
+      define_method(name) { |*args, **kwargs, &block|
+        @value.public_send(name, *args, **kwargs, &block)
+              .then { |res| res.is_a?(Value) ? res.unwrap : res }
+      }
+    end
   end
 
   class << self
