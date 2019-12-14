@@ -7,6 +7,25 @@ require 'backports/2.6.0/kernel/then'
 require 'backports/2.5.0/hash/slice'
 require 'backports/2.5.0/enumerable/all'
 
+# @private
+# TODO: It is included in Ruby 2.7. Replace with backports when it will be there.
+class Enumerator
+  NOVALUE = Object.new.freeze
+
+  def self.produce(initial = NOVALUE)
+    fail ArgumentError, 'No block given' unless block_given?
+
+    Enumerator.new do |y|
+      val = initial == NOVALUE ? yield() : initial
+
+      loop do
+        y << val
+        val = yield(val)
+      end
+    end
+  end
+end
+
 class TimeCalc
   # Wrapper (one can say "monad") around date/time value, allowing to perform several TimeCalc
   # operations in a chain.
@@ -161,6 +180,28 @@ class TimeCalc
     # Subtracts `span units` from wrapped value.
     def -(span_or_other, unit = nil)
       unit.nil? ? Diff.new(self, span_or_other) : self.+(-span_or_other, unit)
+    end
+
+    # Like {#+}, but allows conditional skipping of some periods. Increases value by `unit`
+    # at least `span` times, on each iteration checking with block provided if this point
+    # matches desired period; if it is not, it is skipped without increasing iterations
+    # counter. Useful for "business date/time" algorithms.
+    #
+    # See {TimeCalc#iterate} for examples.
+    #
+    # @param span [Integer]
+    # @param unit [Symbol]
+    # @return [Value]
+    # @yield [Time/Date/DateTime] Object of wrapped class
+    # @yieldreturn [true, false] If this point in time is "suitable". If the falsey value is returned,
+    #    iteration is skipped without increasing the counter.
+    def iterate(span, unit)
+      block_given? or fail ArgumentError, 'No block given'
+      Integer === span or fail ArgumentError, 'Only integer spans are supported' # rubocop:disable Style/CaseEquality
+
+      Enumerator.produce(self) { |v| v.+((span <=> 0).nonzero? || 1, unit) }
+                .lazy.select { |v| yield(v.internal) }
+                .drop(span.abs).first
     end
 
     # Produces {Sequence} from this value to `date_or_time`

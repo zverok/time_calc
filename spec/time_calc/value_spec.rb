@@ -132,6 +132,52 @@ RSpec.describe TimeCalc::Value do
       }
     end
 
+    describe '#iterate' do
+      context 'without additional conditions' do
+        subject { value.iterate(10, :days) }
+
+        its_block { is_expected.to raise_error ArgumentError, 'No block given' }
+      end
+
+      context 'without trivial condition' do
+        subject { value.iterate(10, :days) { true } }
+
+        it { is_expected.to eq value.+(10, :days) }
+      end
+
+      context 'with condition' do
+        subject { value.iterate(10, :days) { |t| (1..5).cover?(t.wday) } }
+
+        it { is_expected.to eq value.+(14, :days) }
+      end
+
+      context 'with negative span' do
+        subject { value.iterate(-10, :days) { true } }
+
+        it { is_expected.to eq value.-(10, :days) }
+      end
+
+      context 'with zero span' do
+        context 'when no changes necessary' do
+          subject { value.iterate(0, :days) { true } }
+
+          it { is_expected.to eq value }
+        end
+
+        context 'when changes necessary' do
+          subject { value.iterate(0, :days) { |t| t.day < 20 } }
+
+          it { is_expected.to eq vt('2019-07-01 14:28:48.123 +03') }
+        end
+      end
+
+      context 'with non-integer span' do
+        subject { value.iterate(10.5, :days) { true } }
+
+        its_block { is_expected.to raise_error ArgumentError }
+      end
+    end
+
     if RUBY_VERSION >= '2.6'
       require 'tzinfo'
       context 'with real time zones' do

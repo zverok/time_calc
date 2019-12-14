@@ -190,6 +190,37 @@ class TimeCalc
   #   @param unit [Symbol]
   #   @return [Date, Time, DateTime] value of the same type that was initial wrapped value.
 
+  # @!method iterate(span, unit)
+  #   Like {#+}, but allows conditional skipping of some periods. Increases value by `unit`
+  #   at least `span` times, on each iteration checking with block provided if this point
+  #   matches desired period; if it is not, it is skipped without increasing iterations
+  #   counter. Useful for "business date/time" algorithms.
+  #
+  #   @example
+  #      # add 10 working days.
+  #      TimeCalc.(Time.parse('2019-07-03 23:28:54')).iterate(10, :days) { |t| (1..5).cover?(t.wday) }
+  #      # => 2019-07-17 23:28:54 +0300
+  #
+  #      # add 12 working hours
+  #      TimeCalc.(Time.parse('2019-07-03 13:28:54')).iterate(12, :hours) { |t| (9...18).cover?(t.hour) }
+  #      # => 2019-07-04 16:28:54 +0300
+  #
+  #      # negative spans are working, too:
+  #      TimeCalc.(Time.parse('2019-07-03 13:28:54')).iterate(-12, :hours) { |t| (9...18).cover?(t.hour) }
+  #      # => 2019-07-02 10:28:54 +0300
+  #
+  #      # zero span could be used to robustly change enforce value into acceptable range
+  #      # (increasing forward till block is true):
+  #      TimeCalc.(Time.parse('2019-07-03 23:28:54')).iterate(0, :hours) { |t| (9...18).cover?(t.hour) }
+  #      # => 2019-07-04 09:28:54 +0300
+  #
+  #   @param span [Integer] Could be positive or negative
+  #   @param unit [Symbol]
+  #   @return [Date, Time, DateTime] value of the same type that was initial wrapped value.
+  #   @yield [Time/Date/DateTime] Object of wrapped class
+  #   @yieldreturn [true, false] If this point in time is "suitable". If the falsey value is returned,
+  #    iteration is skipped without increasing the counter.
+
   # @!method -(span_or_other, unit=nil)
   #   @overload -(span, unit)
   #     Subtracts `span units` from wrapped value.
@@ -238,25 +269,28 @@ class TimeCalc
   #   @return [Sequence]
 
   # @private
-  MATH_OPERATIONS = %i[merge truncate floor ceil round + -].freeze
+  MATH_OPERATIONS = %i[merge truncate floor ceil round + - iterate].freeze
   # @private
   OPERATIONS = MATH_OPERATIONS.+(%i[to step for]).freeze
 
   OPERATIONS.each do |name|
-    define_method(name) { |*args|
-      @value.public_send(name, *args).then { |res| res.is_a?(Value) ? res.unwrap : res }
+    define_method(name) { |*args, &block|
+      @value.public_send(name, *args, &block).then { |res| res.is_a?(Value) ? res.unwrap : res }
     }
   end
 
   class << self
     MATH_OPERATIONS.each do |name|
-      define_method(name) { |*args| Op.new([[name, *args]]) }
+      define_method(name) { |*args, &block| Op.new([[name, args, block]]) }
     end
 
     # @!parse
     #   # Creates operation to perform {#+}`(span, unit)`
     #   # @return [Op]
     #   def TimeCalc.+(span, unit); end
+    #   # Creates operation to perform {#iterate}`(span, unit, &block)`
+    #   # @return [Op]
+    #   def TimeCalc.iterate(span, unit, &block); end
     #   # Creates operation to perform {#-}`(span, unit)`
     #   # @return [Op]
     #   def TimeCalc.-(span, unit); end

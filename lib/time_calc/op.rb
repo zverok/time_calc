@@ -22,16 +22,20 @@ class TimeCalc
 
     # @private
     def inspect
-      '<%s %s>' % [self.class, @chain.map { |name, *args| "#{name}(#{args.join(' ')})" }.join('.')]
+      '<%s %s>' % [self.class, @chain.map { |name, args, _| "#{name}(#{args.join(' ')})" }.join('.')]
     end
 
     TimeCalc::MATH_OPERATIONS.each do |name|
-      define_method(name) { |*args| Op.new([*@chain, [name, *args]]) }
+      define_method(name) { |*args, &block| Op.new([*@chain, [name, args, block]]) }
     end
 
     # @!method +(span, unit)
     #   Adds `+(span, unit)` to method chain
     #   @see TimeCalc#+
+    #   @return [Op]
+    # @!method iterate(span, unit, &block)
+    #   Adds `iterate(span, unit, &block)` to method chain
+    #   @see TimeCalc#iterate
     #   @return [Op]
     # @!method -(span, unit)
     #   Adds `-(span, unit)` to method chain
@@ -55,8 +59,8 @@ class TimeCalc
     # @param date_or_time [Date, Time, DateTime]
     # @return [Date, Time, DateTime] Type of the result is always the same as type of the parameter
     def call(date_or_time)
-      @chain.reduce(Value.new(date_or_time)) { |val, (name, *args)|
-        val.public_send(name, *args)
+      @chain.reduce(Value.new(date_or_time)) { |val, (name, args, block)|
+        val.public_send(name, *args, &block)
       }.unwrap
     end
 

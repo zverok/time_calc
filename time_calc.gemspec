@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec', '>= 3.8'
   s.add_development_dependency 'rspec-its', '~> 1'
-  s.add_development_dependency 'saharspec'
+  s.add_development_dependency 'saharspec', '>= 0.0.6'
   s.add_development_dependency 'simplecov', '~> 0.9'
   s.add_development_dependency 'tzinfo'
 
