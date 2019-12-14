@@ -285,7 +285,7 @@ class TimeCalc
     # Will coerce Date to Time or DateTime, with the _zone of the latter_
     def coerce_date(date, other)
       TimeCalc.(other)
-        .merge(Units::DEFAULTS.merge(year: date.year, month: date.month, day: date.day))
+        .merge(**Units::DEFAULTS.merge(year: date.year, month: date.month, day: date.day))
     end
   end
 end

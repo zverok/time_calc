@@ -7,20 +7,22 @@ require 'backports/2.6.0/kernel/then'
 require 'backports/2.5.0/hash/slice'
 require 'backports/2.5.0/enumerable/all'
 
-# @private
-# TODO: It is included in Ruby 2.7. Replace with backports when it will be there.
-class Enumerator
-  NOVALUE = Object.new.freeze
+if RUBY_VERSION < '2.7'
+  # @private
+  # TODO: Replace with backports after 2.7 release
+  class Enumerator
+    NOVALUE = Object.new.freeze
 
-  def self.produce(initial = NOVALUE)
-    fail ArgumentError, 'No block given' unless block_given?
+    def self.produce(initial = NOVALUE)
+      fail ArgumentError, 'No block given' unless block_given?
 
-    Enumerator.new do |y|
-      val = initial == NOVALUE ? yield() : initial
+      Enumerator.new do |y|
+        val = initial == NOVALUE ? yield() : initial
 
-      loop do
-        y << val
-        val = yield(val)
+        loop do
+          y << val
+          val = yield(val)
+        end
       end
     end
   end
@@ -118,7 +120,7 @@ class TimeCalc
         .drop_while { |u| u != unit }
         .drop(1)
         .then { |keys| Units::DEFAULTS.slice(*keys) }
-        .then(&method(:merge))
+        .then { |attrs| merge(**attrs) } # can't simplify to &method(:merge) due to 2.7 keyword param problem
     end
 
     alias floor truncate

@@ -274,8 +274,9 @@ class TimeCalc
   OPERATIONS = MATH_OPERATIONS.+(%i[to step for]).freeze
 
   OPERATIONS.each do |name|
-    define_method(name) { |*args, &block|
-      @value.public_send(name, *args, &block).then { |res| res.is_a?(Value) ? res.unwrap : res }
+    define_method(name) { |*args, **kwargs, &block|
+      @value.public_send(name, *args, **kwargs, &block)
+            .then { |res| res.is_a?(Value) ? res.unwrap : res }
     }
   end
 
