@@ -28,6 +28,9 @@ RSpec/NestedGroups:
 RSpec/ExampleLength:
   Enabled: false
 
+RSpec/EmptyLineAfterExample:
+  Enabled: false
+
 RSpec/MultipleExpectations:
   Exclude:
     - 'time_calc_spec.rb'

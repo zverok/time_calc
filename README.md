@@ -67,6 +67,29 @@ TimeCalc.(t).+(3, :months) # jump over DST: we have +3 in summer and +2 in winte
 ```
 <small>(Random fun fact: it is Kyiv, not Kiev!)</small>
 
+### Math with skipping "non-business time"
+
+[TimeCalc#iterate](https://www.rubydoc.info/gems/time_calc/TimeCalc#iterate-instance_method) allows to advance or decrease time values by skipping some of them (like weekends, holidays, and non-working hours):
+
+```ruby
+# add 10 working days (weekends are not counted)
+TimeCalc.(Time.parse('2019-07-03 23:28:54')).iterate(10, :days) { |t| (1..5).cover?(t.wday) }
+# => 2019-07-17 23:28:54 +0300
+
+# add 12 working hours
+TimeCalc.(Time.parse('2019-07-03 13:28:54')).iterate(12, :hours) { |t| (9...18).cover?(t.hour) }
+# => 2019-07-04 16:28:54 +0300
+
+# negative spans are working, too:
+TimeCalc.(Time.parse('2019-07-03 13:28:54')).iterate(-12, :hours) { |t| (9...18).cover?(t.hour) }
+# => 2019-07-02 10:28:54 +0300
+
+# zero span could be used to robustly enforce value into acceptable range
+# (increasing forward till block is true):
+TimeCalc.(Time.parse('2019-07-03 23:28:54')).iterate(0, :hours) { |t| (9...18).cover?(t.hour) }
+# => 2019-07-04 09:28:54 +0300
+```
+
 ### Difference of two values
 
 ```ruby

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe TimeCalc::Op do
-  subject(:op) { described_class.new([[:+, 1, :day], [:round, :hour]]) }
+  subject(:op) { described_class.new([[:+, [1, :day]], [:round, [:hour]]]) }
 
-  its(:chain) { is_expected.to eq [[:+, 1, :day], [:round, :hour]] }
+  its(:chain) { is_expected.to eq [[:+, [1, :day]], [:round, [:hour]]] }
   its(:inspect) { is_expected.to eq '<TimeCalc::Op +(1 day).round(hour)>' }
 
   describe '#<op>' do
@@ -12,7 +12,7 @@ RSpec.describe TimeCalc::Op do
     it {
       is_expected
         .to be_a(described_class)
-        .and have_attributes(chain: [[:+, 1, :day], [:round, :hour], [:floor, :day], [:-, 1, :hour]])
+        .and have_attributes(chain: [[:+, [1, :day]], [:round, [:hour]], [:floor, [:day]], [:-, [1, :hour]]])
     }
   end
 

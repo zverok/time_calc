@@ -39,7 +39,7 @@ RSpec.describe TimeCalc do
 
     it 'has shortcuts for op creation' do
       expect(described_class.+(5, :days).floor(:hour))
-        .to be_an(TimeCalc::Op).and have_attributes(chain: [[:+, 5, :days], [:floor, :hour]])
+        .to be_an(TimeCalc::Op).and have_attributes(chain: [[:+, [5, :days]], [:floor, [:hour]]])
     end
   end
 end

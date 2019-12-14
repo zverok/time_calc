@@ -26,7 +26,7 @@ class TimeCalc
     end
 
     TimeCalc::MATH_OPERATIONS.each do |name|
-      define_method(name) { |*args, &block| Op.new([*@chain, [name, args, block]]) }
+      define_method(name) { |*args, &block| Op.new([*@chain, [name, args, block].compact]) }
     end
 
     # @!method +(span, unit)

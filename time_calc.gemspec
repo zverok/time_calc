@@ -29,8 +29,8 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'backports', '>= 3.15.0'
 
-  s.add_development_dependency 'rubocop', '~> 0.72.0'
-  s.add_development_dependency 'rubocop-rspec', '>= 1.17.1'
+  s.add_development_dependency 'rubocop', '~> 0.77.0'
+  s.add_development_dependency 'rubocop-rspec', '~> 1.37.0'
 
   s.add_development_dependency 'rspec', '>= 3.8'
   s.add_development_dependency 'rspec-its', '~> 1'

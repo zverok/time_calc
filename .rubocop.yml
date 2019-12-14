@@ -26,7 +26,7 @@ Style/MultilineBlockChain:
 Layout/SpaceInsideHashLiteralBraces:
   EnforcedStyle: no_space
 
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Enabled: false
 
 Style/FormatStringToken:
