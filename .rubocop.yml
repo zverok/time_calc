@@ -7,7 +7,7 @@ AllCops:
   DisplayCopNames: true
   TargetRubyVersion: 2.4
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 100
   IgnoredPatterns: ['\#.*'] # ignore long comments
 
@@ -52,3 +52,20 @@ Metrics/ClassLength:
 
 Style/EmptyCaseCondition:
   Enabled: false
+
+# Should always be configured:
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+

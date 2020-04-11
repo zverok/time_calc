@@ -29,12 +29,12 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'backports', '>= 3.17.0'
 
-  s.add_development_dependency 'rubocop', '~> 0.77.0'
-  s.add_development_dependency 'rubocop-rspec', '~> 1.37.0'
+  s.add_development_dependency 'rubocop', '~> 0.81.0'
+  s.add_development_dependency 'rubocop-rspec', '~> 1.38.0'
 
   s.add_development_dependency 'rspec', '>= 3.8'
   s.add_development_dependency 'rspec-its', '~> 1'
-  s.add_development_dependency 'saharspec', '>= 0.0.6'
+  s.add_development_dependency 'saharspec', '>= 0.0.7'
   s.add_development_dependency 'simplecov', '~> 0.9'
   s.add_development_dependency 'tzinfo', '~> 1.1'
 
