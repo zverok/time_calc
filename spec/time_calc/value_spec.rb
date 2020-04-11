@@ -20,6 +20,11 @@ RSpec.describe TimeCalc::Value do
     its_call('2019-06-28 14:28:48.123 +03') {
       is_expected.to raise_error ArgumentError
     }
+    its_call(tvz('2019-06-28 14:28:48.123', 'Europe/Kiev')) {
+      is_expected.to ret be_a(described_class)
+        .and have_attributes(unwrap: ActiveSupport::TimeWithZone)
+        .and have_attributes(unwrap: tvz('2019-06-28 14:28:48.123', 'Europe/Kiev'))
+    }
 
     o1 = Object.new.tap { |obj|
       def obj.to_time
@@ -179,7 +184,6 @@ RSpec.describe TimeCalc::Value do
     end
 
     if RUBY_VERSION >= '2.6'
-      require 'tzinfo'
       context 'with real time zones' do
         let(:zone) { TZInfo::Timezone.get('Europe/Zagreb') }
         let(:source) { Time.new(2019, 7, 5, 14, 30, 18, zone) }
@@ -257,6 +261,35 @@ RSpec.describe TimeCalc::Value do
       its_call(1, :year) { is_expected.to ret vdt('2020-06-28 14:28:48.123 +03') }
       its_call(1, :month) { is_expected.to ret vdt('2019-07-28 14:28:48.123 +03') }
       its_call(1, :hour) { is_expected.to ret vdt('2019-06-28 15:28:48.123 +03') }
+    end
+  end
+
+  context 'with ActiveSupport::TimeWithZone' do
+    let(:source) { tvz('2019-06-28 14:28:48.123', 'Europe/Kiev') }
+
+    its(:unwrap) { is_expected.to eq source }
+    its(:inspect) { is_expected.to eq '#<TimeCalc::Value(2019-06-28 14:28:48 +0300)>' }
+
+    describe '#merge' do
+      subject { value.method(:merge) }
+
+      its_call(year: 2018) { is_expected.to ret vtvz('2018-06-28 14:28:48.123', 'Europe/Kiev') }
+    end
+
+    describe '#truncate' do
+      subject { value.method(:truncate) }
+
+      its_call(:month) { is_expected.to ret vtvz('2019-06-01 00:00:00', 'Europe/Kiev') }
+      its_call(:hour) { is_expected.to ret vtvz('2019-06-28 14:00:00', 'Europe/Kiev') }
+      its_call(:sec) { is_expected.to ret vtvz('2019-06-28 14:28:48', 'Europe/Kiev') }
+    end
+
+    describe '#+' do
+      subject { value.method(:+) }
+
+      its_call(1, :year) { is_expected.to ret vtvz('2020-06-28 14:28:48.123', 'Europe/Kiev') }
+      its_call(1, :month) { is_expected.to ret vtvz('2019-07-28 14:28:48.123', 'Europe/Kiev') }
+      its_call(1, :hour) { is_expected.to ret vtvz('2019-06-28 15:28:48.123', 'Europe/Kiev') }
     end
   end
 end

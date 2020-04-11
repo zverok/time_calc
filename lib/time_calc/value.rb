@@ -6,27 +6,7 @@ require 'backports/2.6.0/hash/to_h'
 require 'backports/2.6.0/kernel/then'
 require 'backports/2.5.0/hash/slice'
 require 'backports/2.5.0/enumerable/all'
-
-if RUBY_VERSION < '2.7'
-  # @private
-  # TODO: Replace with backports after 2.7 release
-  class Enumerator
-    NOVALUE = Object.new.freeze
-
-    def self.produce(initial = NOVALUE)
-      fail ArgumentError, 'No block given' unless block_given?
-
-      Enumerator.new do |y|
-        val = initial == NOVALUE ? yield() : initial
-
-        loop do
-          y << val
-          val = yield(val)
-        end
-      end
-    end
-  end
-end
+require 'backports/2.7.0/enumerator/produce'
 
 class TimeCalc
   # Wrapper (one can say "monad") around date/time value, allowing to perform several TimeCalc
@@ -41,9 +21,16 @@ class TimeCalc
     TIMEY = proc { |t| t.respond_to?(:to_time) }
 
     # @private
+    # Because AS::TimeWithZone so frigging smart that it returns "Time" from redefined class name.
+    CLASS_NAME = Class.instance_method(:name)
+
+    # @private
     def self.wrap(value)
       case value
       when Time, Date, DateTime
+        # NB: ActiveSupport::TimeWithZone will also pass to this branch if
+        # active_support/core_ext/time is required. But it is doubtfully it is not -- TWZ will be
+        # mostly unusable :)
         new(value)
       when Value
         value
@@ -100,7 +87,8 @@ class TimeCalc
     # @param attrs [Hash<Symbol => Integer>]
     # @return [Value]
     def merge(**attrs)
-      Value.new(Types.public_send("merge_#{internal.class.name.downcase}", internal, **attrs))
+      class_name = CLASS_NAME.bind(internal.class).call.tr(':', '_')
+      Value.new(Types.public_send("merge_#{class_name.downcase}", internal, **attrs))
     end
 
     # Truncates all time components lower than `unit`. In other words, "floors" (rounds down)

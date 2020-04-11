@@ -7,10 +7,15 @@ class TimeCalc
     extend self
 
     ATTRS = {
-      Time => %i[year month day hour min sec subsec utc_offset],
-      Date => %i[year month day],
-      DateTime => %i[year month day hour min sec sec_fraction zone]
+      'Time' => %i[year month day hour min sec subsec utc_offset],
+      'Date' => %i[year month day],
+      'DateTime' => %i[year month day hour min sec sec_fraction zone],
+      'ActiveSupport::TimeWithZone' => %i[year month day hour min sec sec_fraction time_zone]
     }.freeze
+
+    # @private
+    # Because AS::TimeWithZone so frigging smart that it returns "Time" from redefined class name.
+    CLASS_NAME = Class.instance_method(:name)
 
     def compatible?(v1, v2)
       [v1, v2].all?(Date) || [v1, v2].all?(Time)
@@ -46,6 +51,22 @@ class TimeCalc
         .values.then { |components| DateTime.new(*components) }
     end
 
+    def merge_activesupport__timewithzone(value, **attrs)
+      # You'd imagine we should be able to use just value.change(...) ActiveSupport's API here...
+      # But it is not available if you don't require all the core_ext's of Time, so I decided to
+      # be on the safe side and use similar approach everywhere.
+
+      # When we truncate, we use :subsec key as a sign to zeroefy second fractions
+      attrs[:sec_fraction] ||= attrs.delete(:subsec) if attrs.key?(:subsec)
+
+      _merge(value, **attrs)
+        .then { |components|
+          zone = components.delete(:time_zone)
+          components.merge!(mday: components.delete(:day), mon: components.delete(:month))
+          zone.__send__(:parts_to_time, components, value)
+        }
+    end
+
     private
 
     REAL_TIMEZONE = ->(z) { z.respond_to?(:utc_to_local) } # Ruby 2.6 real timezones
@@ -63,7 +84,7 @@ class TimeCalc
     end
 
     def _merge(value, attrs)
-      attr_names = ATTRS.fetch(value.class)
+      attr_names = ATTRS.fetch(CLASS_NAME.bind(value.class).call)
       attr_names.to_h { |u| [u, value.public_send(u)] }.merge(**attrs.slice(*attr_names))
     end
   end

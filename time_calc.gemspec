@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.files = `git ls-files lib LICENSE.txt *.md`.split($RS)
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency 'backports', '>= 3.15.0'
+  s.add_runtime_dependency 'backports', '>= 3.17.0'
 
   s.add_development_dependency 'rubocop', '~> 0.77.0'
   s.add_development_dependency 'rubocop-rspec', '~> 1.37.0'
@@ -36,7 +36,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-its', '~> 1'
   s.add_development_dependency 'saharspec', '>= 0.0.6'
   s.add_development_dependency 'simplecov', '~> 0.9'
-  s.add_development_dependency 'tzinfo'
+  s.add_development_dependency 'tzinfo', '~> 1.1'
+
+  s.add_development_dependency 'activesupport', '>= 5.0' # to test with TimeWithZone
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rubygems-tasks'
