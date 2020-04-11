@@ -16,7 +16,8 @@ _**NB:** TimeCalc is a continuation of [TimeMath](https://github.com/zverok/time
 * Tries its best to preserve timezone/offset information:
   * **on Ruby 2.6+**, for `Time` with real timezones, preserves them;
   * on Ruby < 2.6, preserves at least `utc_offset` of `Time`;
-  * for `DateTime` preserves zone name.
+  * for `DateTime` preserves zone name;
+* _Since 0.0.4,_ supports `ActiveSupport::TimeWithZone`, too. While in ActiveSupport-enabled context TimeCalc may seem redundant (you'll probably use `time - 1.day` anyways), some of the functionality is easier with TimeCalc (rounding to different units) or just not present in ActiveSupport (time sequences, iterate with skippking); also may be helpful for third-party libraries which want to use TimeCalc underneath but don't want to be broken in Rails context.
 
 ## Synopsis
 

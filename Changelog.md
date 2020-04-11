@@ -1,5 +1,10 @@
 # TimeCalc changelog
 
+## 0.0.4 / 2020-04-11
+
+* Support `ActiveSupport::TimeWithZone` as a calculation target.
+
+
 ## 0.0.3 / 2019-12-14
 
 * Add `TimeCalc#iterate` to easily operate in "business date/time" contexts.
