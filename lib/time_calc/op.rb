@@ -54,6 +54,9 @@ class TimeCalc
     #   @see TimeCalc#round
     #   @return [Op]
 
+    alias add +
+    alias sub -
+
     # Performs the whole chain of operation on parameter, returning the result.
     #
     # @param date_or_time [Date, Time, DateTime]
