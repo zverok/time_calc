@@ -227,7 +227,7 @@ class TimeCalc
 
     # @private
     def convert(klass)
-      return dup if internal.class == klass
+      return dup if internal.instance_of?(klass)
 
       Value.new(Types.convert(internal, klass))
     end

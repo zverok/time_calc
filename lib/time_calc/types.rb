@@ -26,7 +26,7 @@ class TimeCalc
     end
 
     def convert(v, klass)
-      return v if v.class == klass
+      return v if v.instance_of?(klass)
 
       v.public_send("to_#{klass.name.downcase}")
     end

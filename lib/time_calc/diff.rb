@@ -267,10 +267,9 @@ class TimeCalc
     end
 
     def coerce_classes(from, to)
-      case
-      when from.class == Date # not is_a?(Date), it will catch DateTime
+      if from.instance_of?(Date)
         [coerce_date(from, to), to]
-      when to.class == Date
+      elsif to.instance_of?(Date)
         [from, coerce_date(to, from)]
       else
         [from, to.public_send("to_#{from.class.downcase}")].then(&method(:coerce_zones))
