@@ -315,6 +315,9 @@ class TimeCalc
     #   # @return [Op]
     #   def TimeCalc.round(unit); end
   end
+
+  alias add +
+  alias sub -
 end
 
 require_relative 'time_calc/op'

@@ -158,6 +158,8 @@ class TimeCalc
       end
     end
 
+    alias add +
+
     # @overload -(span, unit)
     #   Subtracts `span units` from wrapped value.
     #   @param span [Integer]
@@ -171,6 +173,8 @@ class TimeCalc
     def -(span_or_other, unit = nil)
       unit.nil? ? Diff.new(self, span_or_other) : self.+(-span_or_other, unit)
     end
+
+    alias sub -
 
     # Like {#+}, but allows conditional skipping of some periods. Increases value by `unit`
     # at least `span` times, on each iteration checking with block provided if this point
